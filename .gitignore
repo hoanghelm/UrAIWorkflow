@@ -1,0 +1,58 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+build/
+.turbo/
+coverage/
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Environment / secrets — never commit these
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.keystore
+id_rsa
+id_ed25519
+*.crt
+secrets.json
+.secrets
+*credentials*
+*secret*.json
+
+# Local databases (may hold connector API keys)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+apps/api/prisma/data/
+apps/api/data/
+
+# Runtime state (worktrees, previews, artifact bundles, harness)
+.harness/
+worktrees/
+.worktrees/
+
+# Local Claude harness settings (keep shared .claude config, drop local overrides)
+**/settings.local.json
+.claude/settings.local.json
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.local

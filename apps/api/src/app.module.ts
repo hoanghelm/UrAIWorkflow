@@ -1,0 +1,37 @@
+import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
+import { PrismaModule } from "./prisma/prisma.module";
+import { CatalogModule } from "./modules/catalog/catalog.module";
+import { PacksModule } from "./modules/packs/packs.module";
+import { LedgerModule } from "./modules/ledger/ledger.module";
+import { ConnectorsModule } from "./modules/connectors/connectors.module";
+import { MarketplaceModule } from "./modules/marketplace/marketplace.module";
+import { WorkflowModule } from "./modules/workflow/workflow.module";
+import { RunnerModule } from "./modules/runner/runner.module";
+import { TriggersModule } from "./modules/triggers/triggers.module";
+import { BoardModule } from "./modules/board/board.module";
+import { DiagramsModule } from "./modules/diagrams/diagrams.module";
+import { AiModule } from "./modules/ai/ai.module";
+import { FigmaModule } from "./modules/figma/figma.module";
+import { HealthModule } from "./modules/health/health.module";
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
+    CatalogModule,
+    PacksModule,
+    LedgerModule,
+    ConnectorsModule,
+    MarketplaceModule,
+    WorkflowModule,
+    RunnerModule,
+    TriggersModule,
+    BoardModule,
+    DiagramsModule,
+    AiModule,
+    FigmaModule,
+    HealthModule,
+  ],
+})
+export class AppModule {}
