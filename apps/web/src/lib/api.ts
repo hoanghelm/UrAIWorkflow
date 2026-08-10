@@ -260,6 +260,23 @@ export const api = {
     client.delete<{ id: string }>(`/board/${cardId}/comments/${commentId}`).then((r) => r.data),
   boardArtifacts: (projectId: string) =>
     client.get<BoardCard[]>("/board/artifacts", { params: { projectId } }).then((r) => r.data),
+  boardArtifactVersions: (projectId: string) =>
+    client
+      .get<
+        {
+          id: string;
+          cardId: string | null;
+          runId: string | null;
+          build: number;
+          title: string;
+          type: "epic" | "task" | "issue";
+          fileCount: number;
+          sizeBytes: number;
+          files: { name: string; path: string; kind: string }[];
+          createdAt: string;
+        }[]
+      >("/board/artifact-versions", { params: { projectId } })
+      .then((r) => r.data),
   collectAllArtifacts: (projectId: string) =>
     client.post<BoardCard[]>("/board/collect-all", { projectId }).then((r) => r.data),
   runBoardCard: (id: string) =>

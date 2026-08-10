@@ -19,6 +19,11 @@ export class BoardController {
     return this.board.list(projectId);
   }
 
+  @Get("artifact-versions")
+  artifactVersions(@Query("projectId") projectId: string) {
+    return this.board.artifactVersions(projectId);
+  }
+
   @Get("artifacts")
   artifacts(@Query("projectId") projectId: string) {
     return this.board.artifacts(projectId);

@@ -199,6 +199,31 @@ export class BoardService {
     return rows.map((r) => this.mask(r)).filter((c) => c.artifacts.length > 0);
   }
 
+  async artifactVersions(projectId: string) {
+    const rows = await this.prisma.artifact.findMany({
+      where: { projectId },
+      orderBy: [{ cardId: "asc" }, { build: "desc" }],
+    });
+    const cardIds = [...new Set(rows.map((r) => r.cardId).filter((x): x is string => Boolean(x)))];
+    const cards = await this.prisma.boardCard.findMany({
+      where: { id: { in: cardIds } },
+      select: { id: true, title: true, type: true },
+    });
+    const byCard = new Map(cards.map((c) => [c.id, c]));
+    return rows.map((r) => ({
+      id: r.id,
+      cardId: r.cardId,
+      runId: r.runId,
+      build: r.build,
+      title: r.cardId ? byCard.get(r.cardId)?.title ?? "Artifact" : "Artifact",
+      type: r.cardId ? byCard.get(r.cardId)?.type ?? "task" : "task",
+      fileCount: r.fileCount,
+      sizeBytes: r.sizeBytes,
+      files: JSON.parse(r.files || "[]") as { name: string; path: string; kind: string }[],
+      createdAt: r.createdAt.toISOString(),
+    }));
+  }
+
   async collectAll(projectId: string): Promise<BoardCard[]> {
     const rows = await this.prisma.boardCard.findMany({
       where: { projectId, worktree: { not: null } },
