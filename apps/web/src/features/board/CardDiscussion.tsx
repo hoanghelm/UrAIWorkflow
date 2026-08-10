@@ -115,7 +115,7 @@ export function CardDiscussion({
           rows={2}
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          placeholder="Leave a comment… mention @model to ask the AI to work on it"
+          placeholder="Leave a comment mention @model to ask the AI to work on it"
         />
         <div className="flex flex-wrap items-center gap-2">
           <Button type="primary" size="small" loading={busy} onClick={() => post("comment")}>

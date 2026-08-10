@@ -227,7 +227,7 @@ export function RunDetailPage() {
             isBuild ? (
               pstatus === "building" ? (
                 <span className="flex items-center gap-1 text-xs text-accent">
-                  <LoadingOutlined spin /> building…
+                  <LoadingOutlined spin /> building
                 </span>
               ) : null
             ) : isDeploy ? (
@@ -312,24 +312,27 @@ export function RunDetailPage() {
                       const isCall = line.startsWith("call · ");
                       const isResult = line.trimStart().startsWith("result · ");
                       const isThinking = line.startsWith("thinking · ");
+                      const isContext = line.startsWith("context · ");
                       const pending =
                         isCall && shownStage.status === "running" && i > lastResult;
                       return (
                         <div
                           key={i}
                           className={`flex items-start gap-1.5 whitespace-pre-wrap ${
-                            isCall
-                              ? "text-accent"
-                              : isResult
-                                ? "pl-3 text-faint"
-                                : isThinking
-                                  ? "text-muted italic"
-                                  : "text-fg"
+                            isContext
+                              ? "font-semibold text-indigo-400"
+                              : isCall
+                                ? "text-accent"
+                                : isResult
+                                  ? "pl-3 text-faint"
+                                  : isThinking
+                                    ? "text-muted italic"
+                                    : "text-fg"
                           }`}
                         >
                           {pending && <LoadingOutlined spin className="mt-0.5 shrink-0" />}
                           <span className={pending ? "" : "flex-1"}>{line}</span>
-                          {pending && <span className="text-faint">running…</span>}
+                          {pending && <span className="text-faint">running</span>}
                         </div>
                       );
                     });

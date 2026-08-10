@@ -159,7 +159,7 @@ export function DiagramsPage() {
             </Button>
             <Select
               value={undefined}
-              placeholder={codeLoading ? "Reading code…" : "From code"}
+              placeholder={codeLoading ? "Reading code" : "From code"}
               disabled={codeLoading}
               style={{ width: 150 }}
               onChange={(v) => loadFromCode(v as "folder" | "file")}
@@ -188,7 +188,7 @@ export function DiagramsPage() {
           context={context}
           setContext={setContext}
           contextPlaceholder="e.g. React + NestJS + SQLite; modules: catalog, runner, connectors; realtime over socket.io"
-          inputPlaceholder="Describe the diagram, or ask to change it…"
+          inputPlaceholder="Describe the diagram, or ask to change it"
           emptyHint="Describe what to diagram. I'll draw it in the preview, then we can refine it."
           starters={[
             "Diagram the auth flow: user logs in via OAuth, API issues a JWT, requests hit the gateway.",

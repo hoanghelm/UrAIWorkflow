@@ -13,7 +13,12 @@ export class FigmaService {
     private readonly runner: RunnerService,
   ) {}
 
-  async generate(projectId: string, figmaUrl: string, token: string): Promise<{ runId: string }> {
+  async generate(
+    projectId: string,
+    figmaUrl: string,
+    token: string,
+    title?: string,
+  ): Promise<{ runId: string }> {
     if (!figmaUrl.trim() || !token.trim()) {
       throw new BadRequestException("A Figma frame URL and a Figma access token are required.");
     }
@@ -27,7 +32,7 @@ export class FigmaService {
         env: { FIGMA_API_KEY: token },
       },
     };
-    const { id } = await this.runner.create({ projectId, cwd: project.root, workflow });
+    const { id } = await this.runner.create({ projectId, cwd: project.root, title, workflow });
     return { runId: id };
   }
 }

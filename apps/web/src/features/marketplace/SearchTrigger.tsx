@@ -9,7 +9,7 @@ export function SearchTrigger() {
       style={{ minWidth: 240 }}
     >
       <SearchOutlined />
-      <span className="flex-1 text-left">Search components…</span>
+      <span className="flex-1 text-left">Search components</span>
       <kbd className="rounded border border-gray-200 px-1.5 font-mono text-xs dark:border-gray-700">
         ⌘K
       </kbd>

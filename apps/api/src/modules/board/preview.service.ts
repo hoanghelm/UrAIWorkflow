@@ -180,19 +180,26 @@ export class PreviewService {
     return { status: s.status, url: s.url ?? null, logs: s.logs.slice(-40) };
   }
 
-  async start(cardId: string) {
+  async start(cardId: string, artifactId?: string) {
     await this.stop(cardId);
-    const artifact = await this.prisma.artifact.findFirst({
-      where: { cardId },
-      orderBy: { createdAt: "desc" },
-    });
+    const artifact = artifactId
+      ? await this.prisma.artifact.findUnique({ where: { id: artifactId } })
+      : await this.prisma.artifact.findFirst({
+          where: { cardId },
+          orderBy: { createdAt: "desc" },
+        });
     let plan: PreviewPlan;
     let dir: string;
     if (artifact) {
-      plan = JSON.parse(artifact.preview || "{}") as PreviewPlan;
       dir = join(PREVIEW_DIR, cardId);
       await fs.rm(dir, { recursive: true, force: true }).catch(() => {});
-      await this.artifactSvc.unpack(artifact.path, dir);
+      if (existsSync(artifact.path) && statSync(artifact.path).isDirectory()) {
+        dir = artifact.path;
+      } else {
+        await this.artifactSvc.unpack(artifact.path, dir);
+      }
+      const saved = JSON.parse(artifact.preview || "{}") as PreviewPlan;
+      plan = saved.runnable ? saved : await this.evaluate(dir);
     } else {
       const card = await this.prisma.boardCard.findUnique({
         where: { id: cardId },

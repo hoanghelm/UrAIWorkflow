@@ -32,7 +32,6 @@ import {
   PlusOutlined,
   ThunderboltOutlined,
   RobotOutlined,
-  ReloadOutlined,
   CloseOutlined,
   DownOutlined,
   LinkOutlined,
@@ -171,25 +170,6 @@ export function BoardPage() {
     enabled: Boolean(detailCard),
   });
 
-  const [rerunning, setRerunning] = useState(false);
-  const rerunFromArtifact = async (id: string) => {
-    setRerunning(true);
-    try {
-      const updated = await api.rerunBoardCard(id);
-      notify.success("Re-running from the saved artifact");
-      void qc.invalidateQueries({ queryKey: ["board", currentId] });
-      void qc.invalidateQueries({ queryKey: ["runs", currentId] });
-      setDetailCard(null);
-      if (updated.runId) {
-        navigate(`/runs/${updated.runId}`);
-      }
-    } catch {
-      notify.error("No saved artifact to run again yet.");
-    } finally {
-      setRerunning(false);
-    }
-  };
-
   const fmtSize = (b: number) =>
     b < 1024 ? `${b} B` : b < 1048576 ? `${(b / 1024).toFixed(1)} KB` : `${(b / 1048576).toFixed(1)} MB`;
 
@@ -217,19 +197,17 @@ export function BoardPage() {
     setTimeout(() => void pollPreview(id), 1500);
   };
 
-  const startPreview = async (id: string) => {
-    if (preview?.status === "ready" && preview.url) {
-      window.open(preview.url, "_blank", "noopener");
-      return;
-    }
+  const [previewArtifactId, setPreviewArtifactId] = useState<string | null>(null);
+  const startPreview = async (id: string, artifactId?: string) => {
     setPreviewing(true);
+    setPreviewArtifactId(artifactId ?? null);
     try {
-      const s = await api.previewStart(id);
+      const s = await api.previewStart(id, artifactId);
       setPreview(s);
       setTimeout(() => void pollPreview(id), 1500);
     } catch {
       setPreviewing(false);
-      notify.error("This artifact isn't a runnable web app.");
+      notify.error("This version isn't a runnable web app.");
     }
   };
 
@@ -448,21 +426,6 @@ export function BoardPage() {
     }
   };
 
-  const [collecting, setCollecting] = useState(false);
-  const collectArtifacts = async (id: string) => {
-    setCollecting(true);
-    try {
-      const updated = await api.collectBoardCard(id);
-      setDetailCard(updated);
-      void qc.invalidateQueries({ queryKey: ["board-bundles", id] });
-      notify.success(`Collected ${updated.artifacts.length} file(s) into a compressed artifact`);
-    } catch {
-      notify.error("No worktree to collect from yet");
-    } finally {
-      setCollecting(false);
-    }
-  };
-
   const [linkOpen, setLinkOpen] = useState(false);
   const linkItem = async (targetId: string) => {
     if (!detailCard) {
@@ -574,7 +537,7 @@ export function BoardPage() {
           <Input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} />
           <TextArea
             rows={3}
-            placeholder="Describe the requirement…"
+            placeholder="Describe the requirement"
             value={requirement}
             onChange={(e) => setRequirement(e.target.value)}
           />
@@ -741,7 +704,7 @@ export function BoardPage() {
                 <Select
                   showSearch
                   autoFocus
-                  placeholder="Search an item to link…"
+                  placeholder="Search an item to link"
                   optionFilterProp="label"
                   value={null}
                   options={linkOptions(detailCard)}
@@ -863,116 +826,68 @@ export function BoardPage() {
               </div>
             </Section>
 
-            {(detailCard.worktree || detailCard.artifacts.length > 0) && (
-              <Section
-                title="Artifacts"
-                count={detailCard.artifacts.length}
-                actions={
-                  <Button
-                    type="text"
-                    size="small"
-                    icon={<ReloadOutlined />}
-                    loading={collecting}
-                    onClick={() => collectArtifacts(detailCard.id)}
-                  />
-                }
-              >
-                {cardBundles.length === 0 && detailCard.worktree && (
-                  <div className="mb-2 flex flex-col gap-2 rounded-md border border-line bg-surface-2 px-2 py-1.5">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="min-w-0 text-xs text-fg">
-                        {detailCard.artifacts.length} file
-                        {detailCard.artifacts.length === 1 ? "" : "s"} generated in your workspace
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        <Button
-                          size="small"
-                          icon={<ReloadOutlined />}
-                          loading={collecting}
-                          onClick={() => collectArtifacts(detailCard.id)}
-                        >
-                          Save as artifact
-                        </Button>
-                        <Button
-                          size="small"
-                          type="primary"
-                          icon={<LinkOutlined />}
-                          loading={previewing}
-                          onClick={() => startPreview(detailCard.id)}
-                        >
-                          {preview?.status === "ready" ? "Open in browser" : "Build & run"}
-                        </Button>
-                      </div>
-                    </div>
-                    {preview && preview.status !== "idle" && (
-                      <div className="text-[11px] text-accent">preview {preview.status}</div>
-                    )}
-                    {preview && preview.status === "building" && preview.logs.length > 0 && (
-                      <pre className="max-h-24 overflow-auto rounded bg-black/40 p-1.5 font-mono text-[10px] text-gray-300">
-                        {preview.logs.slice(-8).join("\n")}
-                      </pre>
-                    )}
-                  </div>
-                )}
-                {cardBundles.length > 0 && (
-                  <div className="mb-2 flex flex-col gap-2 rounded-md border border-line bg-surface-2 px-2 py-1.5">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="min-w-0 text-xs text-fg">
-                        Bundle: {fmtSize(cardBundles[0].sizeBytes)} · {cardBundles[0].fileCount} files{" "}
-                        <span className="text-faint">(compressed, node_modules excluded)</span>
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        {cardBundles[0].preview?.runnable && (
-                          <Button
-                            size="small"
-                            type="primary"
-                            icon={<LinkOutlined />}
-                            loading={previewing}
-                            onClick={() => startPreview(detailCard.id)}
-                          >
-                            {preview?.status === "ready" ? "Open preview" : "Build & Preview"}
-                          </Button>
-                        )}
-                        <Button
-                          size="small"
-                          icon={<ThunderboltOutlined />}
-                          loading={rerunning}
-                          onClick={() => rerunFromArtifact(detailCard.id)}
-                        >
-                          Run again
-                        </Button>
-                      </div>
-                    </div>
-                    {cardBundles[0].preview?.runnable ? (
-                      <div className="text-[11px] text-faint">
-                        Runnable web app{cardBundles[0].preview.note ? `. ${cardBundles[0].preview.note}` : ""}
-                        {preview && preview.status !== "idle" && (
-                          <span className="ml-1 text-accent">· preview {preview.status}</span>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="text-[11px] text-faint">Not a runnable web app.</div>
-                    )}
-                    {preview && preview.status === "building" && preview.logs.length > 0 && (
-                      <pre className="max-h-24 overflow-auto rounded bg-black/40 p-1.5 font-mono text-[10px] text-gray-300">
-                        {preview.logs.slice(-8).join("\n")}
-                      </pre>
-                    )}
-                  </div>
-                )}
-                {detailCard.artifacts.length === 0 ? (
-                  <p className="text-sm text-faint">No files captured for this task yet.</p>
+            {(cardBundles.length > 0 || detailCard.worktree || detailCard.artifacts.length > 0) && (
+              <Section title="Artifacts" count={cardBundles.length}>
+                {cardBundles.length === 0 ? (
+                  <p className="text-sm text-faint">
+                    No versions yet. Each completed run of this task is saved here as a build you can
+                    run and view.
+                  </p>
                 ) : (
-                  <div className="flex flex-col gap-1">
-                    {detailCard.artifacts.map((a) => (
-                      <div key={a.path} className="flex items-center justify-between gap-2 text-xs">
-                        <span className="truncate font-mono text-fg">{a.path}</span>
-                        <Tag>{a.kind}</Tag>
-                      </div>
-                    ))}
+                  <div className="flex flex-col gap-1.5">
+                    {cardBundles.map((b) => {
+                      const isThis = previewArtifactId === b.id;
+                      return (
+                        <div
+                          key={b.id}
+                          className="rounded-md border border-line bg-surface-2 px-2 py-1.5"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="min-w-0 text-xs text-fg">
+                              Build {b.build} · {b.fileCount} files · {fmtSize(b.sizeBytes)}
+                              <span className="ml-1 text-faint">
+                                {new Date(b.createdAt).toLocaleString()}
+                              </span>
+                            </span>
+                            <Button
+                              size="small"
+                              type="primary"
+                              icon={<LinkOutlined />}
+                              style={{ background: "#E8734A" }}
+                              loading={previewing && isThis}
+                              onClick={() => startPreview(detailCard.id, b.id)}
+                            >
+                              {preview?.status === "ready" && isThis ? "Open" : "Run"}
+                            </Button>
+                          </div>
+                          {b.files.length > 0 && (
+                            <details className="mt-1">
+                              <summary className="cursor-pointer text-[11px] text-faint">
+                                {b.files.length} file{b.files.length === 1 ? "" : "s"}
+                              </summary>
+                              <div className="mt-1 flex max-h-40 flex-col gap-0.5 overflow-auto">
+                                {b.files.map((f) => (
+                                  <div
+                                    key={f.path}
+                                    className="truncate font-mono text-[11px] text-fg"
+                                    title={f.path}
+                                  >
+                                    {f.path}
+                                  </div>
+                                ))}
+                              </div>
+                            </details>
+                          )}
+                          {isThis && preview?.status === "building" && preview.logs.length > 0 && (
+                            <pre className="mt-1 max-h-24 overflow-auto rounded bg-black/40 p-1.5 font-mono text-[10px] text-gray-300">
+                              {preview.logs.slice(-8).join("\n")}
+                            </pre>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
-                <p className="mt-2 truncate font-mono text-[11px] text-faint">{detailCard.worktree}</p>
               </Section>
             )}
 

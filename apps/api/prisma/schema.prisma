@@ -169,8 +169,10 @@ model Artifact {
   runId     String?
   projectId String?
   cardId    String?
+  build     Int      @default(1)
   name      String
   path      String
+  files     String   @default("[]")
   sizeBytes Int      @default(0)
   fileCount Int      @default(0)
   preview   String   @default("{}")

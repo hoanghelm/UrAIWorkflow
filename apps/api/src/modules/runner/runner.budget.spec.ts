@@ -14,11 +14,16 @@ function createFakePrisma() {
         runs.set(data.id, row);
         return row;
       },
+      findUnique: async ({ where }: any) => {
+        const row = runs.get(where.id);
+        return row ? { ...row } : null;
+      },
       findUniqueOrThrow: async ({ where }: any) => {
         const row = runs.get(where.id);
         if (!row) throw new Error(`run not found: ${where.id}`);
         return { ...row };
       },
+      count: async () => runs.size,
       update: async ({ where, data }: any) => {
         const row = runs.get(where.id);
         if (data.tokensConsumed?.increment !== undefined) {
@@ -47,17 +52,29 @@ function createFakePrisma() {
       },
     },
     runEvent: { create: async () => ({}) },
-    stageLog: { upsert: async () => ({}) },
+    stageLog: { upsert: async () => ({}), findMany: async () => [] },
     checkpoint: { create: async () => ({}) },
+    catalogItem: { findFirst: async () => null },
+    project: { findUnique: async () => null },
+    boardCard: {
+      findFirst: async () => null,
+      create: async () => ({}),
+      update: async () => ({}),
+      updateMany: async () => ({}),
+      deleteMany: async () => ({}),
+      count: async () => 0,
+    },
+    artifact: { count: async () => 0, create: async () => ({}) },
     $transaction: async (arr: Promise<unknown>[]) => Promise.all(arr),
     _runs: runs,
   };
 }
 
 function createFakeAgent(tokensPerStage: number): AgentPort {
+  let asked = false;
   return {
     async runStage(request): Promise<StageResult> {
-      return {
+      const base = {
         output: { text: `ran ${request.stageId}` },
         tokensConsumed: tokensPerStage,
         tokensInput: tokensPerStage,
@@ -67,6 +84,11 @@ function createFakeAgent(tokensPerStage: number): AgentPort {
         savings: [],
         verifierPassed: true,
       };
+      if (request.stageId === "s1" && !asked) {
+        asked = true;
+        return { ...base, tokensConsumed: 0, tokensInput: 0, question: "Approve?" };
+      }
+      return base;
     },
   };
 }
@@ -115,11 +137,18 @@ test("budget guardrail breaches on cumulative tokens across a resume, not just t
   const prisma = createFakePrisma();
   const agent = createFakeAgent(60);
   const fakeHeadroom = { acquire: async () => () => {}, snapshot: () => ({}) };
+  const fakeWorktrees = { ensureIsolated: async () => null, remove: async () => {} } as any;
+  const fakeArtifacts = {
+    pack: async () => ({ path: "", sizeBytes: 0, fileCount: 0 }),
+    unpack: async () => {},
+  } as any;
   const runner = new RunnerService(
     prisma as any,
     fakeLedger,
     fakeGateway,
     fakeHeadroom as any,
+    fakeWorktrees,
+    fakeArtifacts,
     agent,
   );
 

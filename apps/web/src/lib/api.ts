@@ -182,9 +182,9 @@ export const api = {
       .post<{ kind: string; artifact: unknown; summary: string }>("/ai/generate", { kind, ...body })
       .then((r) => r.data),
   aiPersonas: () => client.get<PersonaPack[]>("/ai/personas").then((r) => r.data),
-  figmaGenerate: (projectId: string, figmaUrl: string, token: string) =>
+  figmaGenerate: (projectId: string, figmaUrl: string, token: string, title?: string) =>
     client
-      .post<{ runId: string }>("/figma/generate", { projectId, figmaUrl, token })
+      .post<{ runId: string }>("/figma/generate", { projectId, figmaUrl, token, title })
       .then((r) => r.data),
   runs: (projectId?: string) =>
     client.get<RunRow[]>("/runs", { params: { projectId } }).then((r) => r.data),
@@ -270,9 +270,11 @@ export const api = {
       .get<
         {
           id: string;
+          build: number;
           name: string;
           sizeBytes: number;
           fileCount: number;
+          files: { name: string; path: string; kind: string }[];
           preview: { runnable?: boolean; kind?: string; note?: string; dir?: string };
           createdAt: string;
         }[]
@@ -284,9 +286,11 @@ export const api = {
     client
       .get<{ status: string; url: string | null; logs: string[] }>(`/board/${id}/preview`)
       .then((r) => r.data),
-  previewStart: (id: string) =>
+  previewStart: (id: string, artifactId?: string) =>
     client
-      .post<{ status: string; url: string | null; logs: string[] }>(`/board/${id}/preview`)
+      .post<{ status: string; url: string | null; logs: string[] }>(`/board/${id}/preview`, {
+        artifactId,
+      })
       .then((r) => r.data),
   previewStop: (id: string) =>
     client.post<{ status: string }>(`/board/${id}/preview/stop`).then((r) => r.data),

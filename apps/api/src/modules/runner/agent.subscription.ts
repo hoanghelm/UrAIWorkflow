@@ -32,6 +32,13 @@ interface ContentBlock {
 
 interface AgentMessage {
   type: string;
+  subtype?: string;
+  agents?: string[];
+  skills?: string[];
+  tools?: string[];
+  slash_commands?: string[];
+  mcp_servers?: { name: string; status: string }[];
+  plugins?: { name: string; version?: string }[];
   message?: { content?: ContentBlock[]; usage?: Record<string, number> };
   event?: { type?: string; delta?: { type?: string; text?: string } };
   usage?: {
@@ -153,6 +160,28 @@ export class ClaudeSubscriptionAdapter {
           flushedLen = text.length;
           void this.flush(request.runId, request.stageId, text);
         }
+      } else if (message.type === "system" && message.subtype === "init") {
+        if (message.agents?.length) {
+          addTrace(`context · agents: ${message.agents.join(", ")}`);
+        }
+        if (message.skills?.length) {
+          addTrace(`context · skills: ${message.skills.join(", ")}`);
+        }
+        if (message.mcp_servers?.length) {
+          addTrace(
+            `context · mcp: ${message.mcp_servers.map((s) => `${s.name} (${s.status})`).join(", ")}`,
+          );
+        }
+        if (message.slash_commands?.length) {
+          addTrace(`context · commands: ${message.slash_commands.slice(0, 30).join(", ")}`);
+        }
+        if (message.plugins?.length) {
+          addTrace(
+            `context · plugins: ${message.plugins
+              .map((p) => (p.version ? `${p.name}@${p.version}` : p.name))
+              .join(", ")}`,
+          );
+        }
       } else if (message.type === "assistant") {
         for (const block of message.message?.content ?? []) {
           if (block.type === "text") {
@@ -160,7 +189,7 @@ export class ClaudeSubscriptionAdapter {
           } else if (block.type === "thinking" && block.thinking) {
             addTrace(`thinking · ${summarize(block.thinking, 600)}`);
           } else if (block.type === "tool_use") {
-            addTrace(`call · ${block.name ?? "tool"} ${summarizeInput(block.input)}`);
+            addTrace(`call · ${labelTool(block.name, block.input)} ${summarizeInput(block.input)}`);
           }
         }
       } else if (message.type === "user") {
@@ -200,6 +229,24 @@ export class ClaudeSubscriptionAdapter {
       aborted,
     };
   }
+}
+
+function labelTool(name: string | undefined, input: unknown): string {
+  const n = name ?? "tool";
+  if (n.startsWith("mcp__")) {
+    const [, server, ...rest] = n.split("__");
+    return `[mcp:${server}] ${rest.join(".")}`;
+  }
+  const o = (input && typeof input === "object" ? input : {}) as Record<string, unknown>;
+  if (n === "Skill" || n === "skill") {
+    const skill = o.command ?? o.skill ?? o.name;
+    return `[skill] ${typeof skill === "string" ? skill : "skill"}`;
+  }
+  if (n === "Task" || n === "Agent") {
+    const agent = o.subagent_type ?? o.agent ?? o.description;
+    return `[agent] ${typeof agent === "string" ? agent : "subagent"}`;
+  }
+  return n;
 }
 
 function summarize(value: string, max: number): string {

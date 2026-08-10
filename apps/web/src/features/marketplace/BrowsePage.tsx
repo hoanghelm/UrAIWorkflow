@@ -80,7 +80,7 @@ export function BrowsePage() {
           className="flex-1"
           style={{ minWidth: 240 }}
           prefix={<SearchOutlined className="text-faint" />}
-          placeholder="Search components…"
+          placeholder="Search components"
           value={browse.query}
           onChange={(e) => browse.setQuery(e.target.value)}
           allowClear

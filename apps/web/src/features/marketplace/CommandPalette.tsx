@@ -123,7 +123,7 @@ export function CommandPalette() {
               setActive(0);
             }}
             onKeyDown={onKeyDown}
-            placeholder="Search components…"
+            placeholder="Search components"
             className="w-full bg-transparent py-3 text-sm outline-none"
           />
           <kbd className="rounded border border-gray-200 px-1.5 text-xs text-faint dark:border-gray-700">

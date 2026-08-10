@@ -77,7 +77,7 @@ export function ProjectAiBuilder({
             context={context}
             setContext={setContext}
             contextPlaceholder="e.g. This is a NestJS + React repo; deploy via Docker; tests with vitest."
-            inputPlaceholder="Describe the automation to build for this project…"
+            inputPlaceholder="Describe the automation to build for this project"
             emptyHint="Describe an automation. I'll design a workflow for this project, then run it end to end."
             starters={[
               "Review the latest changes, run the tests, and open a PR with a summary.",

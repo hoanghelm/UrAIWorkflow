@@ -145,8 +145,8 @@ export function ConnectorsPage() {
             value={provider}
             onChange={(v) => setProvider(v as "claude" | "claude-agent")}
             options={[
-              { value: "claude-agent", label: "Claude subscription (Pro / Max login)" },
-              { value: "claude", label: "Anthropic API key (sk-ant-…)" },
+              { value: "claude-agent", label: "Claude subscription" },
+              { value: "claude", label: "Anthropic API key" },
             ]}
           />
           {provider === "claude" ? (

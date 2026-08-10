@@ -6,7 +6,9 @@ export class FigmaController {
   constructor(private readonly figma: FigmaService) {}
 
   @Post("generate")
-  generate(@Body() body: { projectId: string; figmaUrl: string; token: string }) {
-    return this.figma.generate(body.projectId, body.figmaUrl, body.token);
+  generate(
+    @Body() body: { projectId: string; figmaUrl: string; token: string; title?: string },
+  ) {
+    return this.figma.generate(body.projectId, body.figmaUrl, body.token, body.title);
   }
 }

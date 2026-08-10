@@ -17,6 +17,7 @@ export function FigmaModal({
 }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
   const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY) ?? "");
   const [running, setRunning] = useState(false);
@@ -29,10 +30,11 @@ export function FigmaModal({
     setRunning(true);
     try {
       localStorage.setItem(TOKEN_KEY, token.trim());
-      const { runId } = await api.figmaGenerate(projectId, url.trim(), token.trim());
+      const { runId } = await api.figmaGenerate(projectId, url.trim(), token.trim(), title.trim() || undefined);
       void queryClient.invalidateQueries({ queryKey: ["runs"] });
       onClose();
       setUrl("");
+      setTitle("");
       navigate(`/runs/${runId}`);
     } catch {
       notify.error("Could not start. Check the URL and token, then retry.");
@@ -57,6 +59,14 @@ export function FigmaModal({
           workspace&apos;s stack and conventions. Expect a solid first pass you then tidy up, not a
           pixel-perfect copy.
         </p>
+        <div>
+          <div className="mb-1 text-xs uppercase text-faint">Title (optional)</div>
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Name this task, or leave blank"
+          />
+        </div>
         <div>
           <div className="mb-1 text-xs uppercase text-faint">Figma frame URL</div>
           <Input

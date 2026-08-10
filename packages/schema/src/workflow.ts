@@ -24,6 +24,7 @@ export const createRunInputSchema = z.object({
   projectId: z.string().min(1),
   cardId: z.string().optional(),
   cwd: z.string().optional(),
+  title: z.string().optional(),
   workflow: workflowSchema,
 });
 export type CreateRunInput = z.infer<typeof createRunInputSchema>;

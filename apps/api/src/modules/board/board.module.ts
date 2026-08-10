@@ -3,13 +3,12 @@ import { WorkflowModule } from "../workflow/workflow.module";
 import { RunnerModule } from "../runner/runner.module";
 import { BoardController } from "./board.controller";
 import { BoardService } from "./board.service";
-import { WorktreeService } from "./worktree.service";
-import { ArtifactsService } from "./artifacts.service";
+import { ArtifactsModule } from "./artifacts.module";
 import { PreviewService } from "./preview.service";
 
 @Module({
-  imports: [WorkflowModule, RunnerModule],
+  imports: [WorkflowModule, RunnerModule, ArtifactsModule],
   controllers: [BoardController],
-  providers: [BoardService, WorktreeService, ArtifactsService, PreviewService],
+  providers: [BoardService, PreviewService],
 })
 export class BoardModule {}

@@ -96,8 +96,8 @@ export class BoardController {
   }
 
   @Post(":id/preview")
-  previewStart(@Param("id") id: string) {
-    return this.board.previewStart(id);
+  previewStart(@Param("id") id: string, @Body() body: { artifactId?: string }) {
+    return this.board.previewStart(id, body?.artifactId);
   }
 
   @Post(":id/preview/stop")

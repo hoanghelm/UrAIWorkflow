@@ -56,9 +56,7 @@ export function SortableCard({
     >
       <div className="flex items-start justify-between gap-2">
         <span className="flex min-w-0 items-center gap-1.5">
-          {(card.status === "in_process" || runStatus === "running") && (
-            <LoadingOutlined spin className="shrink-0 text-accent" />
-          )}
+          {runStatus === "running" && <LoadingOutlined spin className="shrink-0 text-accent" />}
           <Tag color={TYPE_META[card.type].color} className="shrink-0">
             {TYPE_META[card.type].label}
           </Tag>
@@ -86,7 +84,7 @@ export function SortableCard({
         <div className="mt-2 flex flex-col gap-1 rounded-md border border-line bg-surface-2/60 p-1.5">
           {subStages.map((s) => (
             <div key={s.id} className="flex items-center gap-1.5 text-xs">
-              {s.status === "in_process" ? (
+              {s.status === "in_process" && runStatus === "running" ? (
                 <LoadingOutlined spin className="text-accent" />
               ) : (
                 <span

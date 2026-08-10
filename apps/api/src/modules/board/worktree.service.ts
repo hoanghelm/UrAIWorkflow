@@ -1,7 +1,7 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import type { Artifact } from "@vcc-workflow/schema";
 
 const run = promisify(execFile);
@@ -9,6 +9,32 @@ const run = promisify(execFile);
 @Injectable()
 export class WorktreeService {
   private readonly logger = new Logger(WorktreeService.name);
+
+  async ensureIsolated(root: string, runId: string): Promise<string | null> {
+    try {
+      const { stdout } = await run("git", ["-C", root, "rev-parse", "--show-toplevel"]);
+      if (resolve(stdout.trim()) !== resolve(root)) {
+        return null;
+      }
+    } catch {
+      return null;
+    }
+    const path = join(root, ".worktrees", runId);
+    try {
+      await run("git", ["-C", root, "worktree", "add", "--detach", path, "HEAD"]);
+    } catch {
+      this.logger.log(`Reusing worktree at ${path}`);
+    }
+    return path;
+  }
+
+  async remove(root: string, worktreePath: string): Promise<void> {
+    try {
+      await run("git", ["-C", root, "worktree", "remove", "--force", worktreePath]);
+    } catch {
+      /* best effort */
+    }
+  }
 
   async ensure(root: string, itemId: string): Promise<string | null> {
     try {

@@ -149,7 +149,7 @@ export function CodeChatPanel({
               void ask(input);
             }
           }}
-          placeholder="Ask about this code…"
+          placeholder="Ask about this code"
         />
         <Button type="primary" icon={<SendOutlined />} loading={busy} onClick={() => ask(input)} />
       </div>

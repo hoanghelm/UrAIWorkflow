@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { Modal, TextArea, Select, notify } from "@/components/ui";
+import { Modal, Input, TextArea, Select, notify } from "@/components/ui";
 import { api, type PackSummary } from "@/lib/api";
 
 const MODELS = [
@@ -21,6 +21,7 @@ export function RunWorkflowModal({
 }) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [title, setTitle] = useState("");
   const [prompt, setPrompt] = useState("");
   const [model, setModel] = useState("opus");
   const [running, setRunning] = useState(false);
@@ -34,6 +35,7 @@ export function RunWorkflowModal({
       const workflow = await api.workflowFromPack(pack.name, { requirement: prompt });
       const created = await api.createRun({
         projectId,
+        title: title.trim() || undefined,
         workflow: { ...workflow, routing: { ...workflow.routing, exec: model } },
       });
       void queryClient.invalidateQueries({ queryKey: ["runs"] });
@@ -59,7 +61,15 @@ export function RunWorkflowModal({
         <div className="flex flex-col gap-3">
           <p className="text-sm text-muted">{pack.description}</p>
           <div>
-            <div className="mb-1 text-xs uppercase text-faint">Prompt</div>
+            <div className="mb-1 text-xs uppercase text-faint">Title (optional)</div>
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Name this task, or leave blank to use the workflow name"
+            />
+          </div>
+          <div>
+            <div className="mb-1 text-xs uppercase text-faint">Requirements</div>
             <TextArea
               rows={4}
               value={prompt}

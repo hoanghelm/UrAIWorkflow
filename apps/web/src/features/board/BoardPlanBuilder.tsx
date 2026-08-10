@@ -84,7 +84,7 @@ export function BoardPlanBuilder({
             context={context}
             setContext={setContext}
             contextPlaceholder="Anything worth knowing to plan well: audience, constraints, deadline"
-            inputPlaceholder="Describe a goal to break into tasks…"
+            inputPlaceholder="Describe a goal to break into tasks"
             emptyHint="Describe a goal. I'll turn it into an ordered plan, then add the tasks to your board."
             starters={[
               "Launch a monthly newsletter: audience research, content calendar, template, and send.",

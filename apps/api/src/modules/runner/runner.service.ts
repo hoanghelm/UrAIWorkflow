@@ -19,6 +19,8 @@ import { AGENT_PORT, type AgentPort, type StageRequest, type StageResult } from 
 import { agentByName, skillByName, mcpByName } from "../catalog/builtin-blocks";
 import { Semaphore } from "./semaphore";
 import { HeadroomService } from "./headroom.service";
+import { WorktreeService } from "../board/worktree.service";
+import { ArtifactsService } from "../board/artifacts.service";
 
 const MAX_CONCURRENT_AI = 3;
 
@@ -61,6 +63,8 @@ export class RunnerService implements OnModuleDestroy {
     private readonly ledger: LedgerService,
     private readonly gateway: RunnerGateway,
     private readonly headroom: HeadroomService,
+    private readonly worktrees: WorktreeService,
+    private readonly artifactSvc: ArtifactsService,
     @Inject(AGENT_PORT) private readonly agent: AgentPort,
   ) {}
 
@@ -180,9 +184,16 @@ export class RunnerService implements OnModuleDestroy {
 
     const project = await this.prisma.project.findUnique({
       where: { id: input.projectId },
-      select: { root: true },
+      select: { name: true, root: true },
     });
-    const cwd = input.cwd ?? project?.root ?? undefined;
+    const isolated =
+      !input.cwd && !input.cardId && project
+        ? await this.worktrees.ensureIsolated(project.root, runId)
+        : null;
+    const cwd = input.cwd ?? isolated ?? project?.root ?? undefined;
+    const build = (await this.prisma.run.count({ where: { projectId: input.projectId } })) + 1;
+    const runName =
+      !input.cardId && project ? `${project.name} · build ${build}` : workflow.name;
 
     await this.prisma.run.create({
       data: {
@@ -190,7 +201,7 @@ export class RunnerService implements OnModuleDestroy {
         projectId: input.projectId,
         cardId: input.cardId ?? null,
         cwd: cwd ?? null,
-        name: workflow.name,
+        name: runName,
         pack: workflow.pack,
         status: "pending",
         workflow: JSON.stringify(workflow),
@@ -214,12 +225,13 @@ export class RunnerService implements OnModuleDestroy {
     );
 
     if (!input.cardId) {
-      await this.captureRunOnBoard(runId, input.projectId, workflow, cwd);
+      const taskTitle = input.title?.trim() || workflow.name;
+      await this.captureRunOnBoard(runId, input.projectId, workflow, cwd, taskTitle);
     }
 
     this.gateway.emitStarted({
       runId,
-      name: workflow.name,
+      name: runName,
       pack: workflow.pack,
       projectId: input.projectId,
     });
@@ -232,31 +244,47 @@ export class RunnerService implements OnModuleDestroy {
     projectId: string,
     workflow: Workflow,
     cwd?: string,
+    taskTitle?: string,
   ): Promise<void> {
+    const title = taskTitle || workflow.name;
     const maxLoops = guardrailsSchema.parse(workflow.guardrails).maxLoopDepth;
     const model = workflow.routing.exec;
-    const order = await this.prisma.boardCard.count({ where: { projectId, parentId: null } });
-    const taskId = nanoid();
-    await this.prisma.boardCard.create({
-      data: {
-        id: taskId,
-        projectId,
-        title: workflow.name,
-        requirement: "",
-        type: "task",
-        parentId: null,
-        pack: workflow.pack,
-        model,
-        maxLoops,
-        status: "in_process",
-        review: "none",
-        runId,
-        worktree: cwd ?? null,
-        artifacts: "[]",
-        links: "[]",
-        order,
-      },
+    const existing = await this.prisma.boardCard.findFirst({
+      where: { projectId, parentId: null, title },
+      orderBy: { createdAt: "asc" },
     });
+    let taskId: string;
+    if (existing) {
+      taskId = existing.id;
+      await this.prisma.boardCard.update({
+        where: { id: taskId },
+        data: { runId, worktree: cwd ?? null, status: "in_process", model, maxLoops },
+      });
+      await this.prisma.boardCard.deleteMany({ where: { parentId: taskId } });
+    } else {
+      taskId = nanoid();
+      const order = await this.prisma.boardCard.count({ where: { projectId, parentId: null } });
+      await this.prisma.boardCard.create({
+        data: {
+          id: taskId,
+          projectId,
+          title,
+          requirement: "",
+          type: "task",
+          parentId: null,
+          pack: workflow.pack,
+          model,
+          maxLoops,
+          status: "in_process",
+          review: "none",
+          runId,
+          worktree: cwd ?? null,
+          artifacts: "[]",
+          links: "[]",
+          order,
+        },
+      });
+    }
     const steps = workflow.stages.filter(
       (s) => s.action !== "start" && s.action !== "end" && s.action !== "break",
     );
@@ -281,6 +309,7 @@ export class RunnerService implements OnModuleDestroy {
         },
       });
     }
+    await this.prisma.run.update({ where: { id: runId }, data: { cardId: taskId } });
   }
 
   private async syncBoardStage(runId: string, stageId: string, status: string): Promise<void> {
@@ -309,6 +338,7 @@ export class RunnerService implements OnModuleDestroy {
       where: { id: task.id },
       data: { status: "review", artifacts: JSON.stringify(artifacts) },
     });
+    await this.snapshotArtifact(runId, task.id, artifacts).catch(() => undefined);
     const stageRows = await this.prisma.stage.findMany({ where: { runId } });
     const byStage = new Map(stageRows.map((r) => [r.stageId, r.status]));
     for (const stage of workflow.stages) {
@@ -319,6 +349,35 @@ export class RunnerService implements OnModuleDestroy {
         data: { status },
       });
     }
+  }
+
+  private async snapshotArtifact(
+    runId: string,
+    cardId: string,
+    files: Array<{ name: string; path: string; kind: string }>,
+  ): Promise<void> {
+    const run = await this.prisma.run.findUnique({
+      where: { id: runId },
+      select: { cwd: true, projectId: true },
+    });
+    if (!run?.cwd) {
+      return;
+    }
+    const build = (await this.prisma.artifact.count({ where: { cardId } })) + 1;
+    const bundle = await this.artifactSvc.pack(run.cwd, runId);
+    await this.prisma.artifact.create({
+      data: {
+        runId,
+        projectId: run.projectId,
+        cardId,
+        build,
+        name: `build ${build}`,
+        path: bundle.path,
+        files: JSON.stringify(files),
+        sizeBytes: bundle.sizeBytes,
+        fileCount: bundle.fileCount,
+      },
+    });
   }
 
   private async artifactsFromTrace(

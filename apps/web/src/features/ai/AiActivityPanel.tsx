@@ -35,7 +35,7 @@ export function AiActivityPanel({
         ref={bodyRef}
         className="max-h-64 overflow-auto whitespace-pre-wrap px-3 py-2 font-mono text-xs leading-relaxed text-muted"
       >
-        {activity.text || "Contacting the model…"}
+        {activity.text || "Contacting the model"}
       </div>
     </div>
   );

@@ -306,7 +306,7 @@ export function WorkflowBuilderPage() {
           context={context}
           setContext={setContext}
           contextPlaceholder="e.g. Tickets are in a Postgres table; team channel is Slack; urgent = P0/P1."
-          inputPlaceholder="Describe the automation, or ask to change it…"
+          inputPlaceholder="Describe the automation, or ask to change it"
           emptyHint="Describe the automation you want. I'll draw it on the canvas, then we can refine it."
           starters={[
             "Every morning, read new support tickets, classify by severity, draft replies for urgent ones, and post a summary to Slack.",

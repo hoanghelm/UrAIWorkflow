@@ -123,7 +123,7 @@ export function CodeGraphTab({ projectId }: { projectId: string }) {
     return (
       <div className="flex h-[60vh] flex-col items-center justify-center gap-3">
         <Spin />
-        <span className="text-sm text-faint">Analyzing code…</span>
+        <span className="text-sm text-faint">Analyzing code</span>
       </div>
     );
   }

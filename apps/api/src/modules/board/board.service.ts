@@ -246,16 +246,18 @@ export class BoardService {
     });
     return rows.map((r) => ({
       id: r.id,
+      build: r.build,
       name: r.name,
       sizeBytes: r.sizeBytes,
       fileCount: r.fileCount,
+      files: JSON.parse(r.files || "[]") as { name: string; path: string; kind: string }[],
       preview: JSON.parse(r.preview || "{}") as Record<string, unknown>,
       createdAt: r.createdAt.toISOString(),
     }));
   }
 
-  previewStart(cardId: string) {
-    return this.preview.start(cardId);
+  previewStart(cardId: string, artifactId?: string) {
+    return this.preview.start(cardId, artifactId);
   }
 
   previewStatus(cardId: string) {
