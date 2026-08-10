@@ -546,20 +546,41 @@ export class RunnerService implements OnModuleDestroy {
 
   async runArtifacts(runId: string): Promise<{
     cardId: string | null;
+    artifactId: string | null;
     worktree: string | null;
     artifacts: Array<{ name: string; path: string; kind: string }>;
   }> {
-    const card = await this.prisma.boardCard.findFirst({
-      where: { runId, parentId: null },
-      select: { id: true, worktree: true, artifacts: true },
+    const run = await this.prisma.run.findUnique({
+      where: { id: runId },
+      select: { cardId: true },
     });
+    const card =
+      (run?.cardId
+        ? await this.prisma.boardCard.findUnique({
+            where: { id: run.cardId },
+            select: { id: true, worktree: true, artifacts: true },
+          })
+        : null) ??
+      (await this.prisma.boardCard.findFirst({
+        where: { runId, parentId: null },
+        select: { id: true, worktree: true, artifacts: true },
+      }));
     if (!card) {
-      return { cardId: null, worktree: null, artifacts: [] };
+      return { cardId: null, artifactId: null, worktree: null, artifacts: [] };
     }
+    const artifact = await this.prisma.artifact.findFirst({
+      where: { runId },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, files: true },
+    });
+    const artifacts = artifact
+      ? (JSON.parse(artifact.files || "[]") as Array<{ name: string; path: string; kind: string }>)
+      : (JSON.parse(card.artifacts || "[]") as Array<{ name: string; path: string; kind: string }>);
     return {
       cardId: card.id,
+      artifactId: artifact?.id ?? null,
       worktree: card.worktree,
-      artifacts: JSON.parse(card.artifacts || "[]"),
+      artifacts,
     };
   }
 

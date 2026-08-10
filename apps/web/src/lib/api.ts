@@ -200,6 +200,7 @@ export const api = {
     client
       .get<{
         cardId: string | null;
+        artifactId: string | null;
         worktree: string | null;
         artifacts: { name: string; path: string; kind: string }[];
       }>(`/runs/${id}/artifacts`)

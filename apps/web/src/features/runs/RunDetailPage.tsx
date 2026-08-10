@@ -75,7 +75,7 @@ export function RunDetailPage() {
       return;
     }
     try {
-      await api.previewStart(cardId);
+      await api.previewStart(cardId, runArts?.artifactId ?? undefined);
       void refetchPreview();
     } catch {
       notify.error("This run didn't produce a runnable web app.");
