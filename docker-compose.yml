@@ -1,0 +1,20 @@
+services:
+  app:
+    build: .
+    image: uraiworkflow
+    container_name: uraiworkflow
+    ports:
+      - "5173:5173" # web dashboard
+      - "3001:3001" # API + Swagger at /api/docs
+    environment:
+      - PORT=3001
+      - WEB_ORIGIN=http://localhost:5173
+    volumes:
+      # Persist the SQLite database and collected artifacts across restarts.
+      - vcc-db:/app/apps/api/prisma/data
+      - vcc-artifacts:/app/apps/api/data
+    restart: unless-stopped
+
+volumes:
+  vcc-db:
+  vcc-artifacts:
