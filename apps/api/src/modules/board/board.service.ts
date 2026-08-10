@@ -433,11 +433,71 @@ export class BoardService {
         where: { id: cardId },
         data: { review: "changes_requested" },
       });
-    }
-    if (parsed.author === "human" && /@(model|ai)\b/i.test(parsed.body)) {
+      if (parsed.author === "human") {
+        await this.rerunWithFeedback(card, parsed.body);
+      }
+    } else if (parsed.author === "human" && /@\w+/.test(parsed.body)) {
       await this.respondWithModel(card, parsed.body);
     }
     return this.maskComment(row);
+  }
+
+  async deleteComment(commentId: string): Promise<{ id: string }> {
+    await this.prisma.boardComment.delete({ where: { id: commentId } });
+    return { id: commentId };
+  }
+
+  private async postAiComment(cardId: string, body: string): Promise<void> {
+    await this.prisma.boardComment.create({
+      data: { cardId, author: "ai", kind: "comment", body },
+    });
+  }
+
+  private async rerunWithFeedback(card: CardRow, feedback: string): Promise<void> {
+    if (!card.runId) {
+      await this.postAiComment(card.id, "There's no run to change yet. Run this task first.");
+      return;
+    }
+    const run = await this.prisma.run.findUnique({ where: { id: card.runId } });
+    if (!run) {
+      return;
+    }
+    if (run.status === "needs_input") {
+      await this.runner.resume(card.runId, feedback);
+      await this.postAiComment(card.id, "Got it — resuming the run with your input.");
+      return;
+    }
+    const recent = await this.prisma.boardComment.findMany({
+      where: { cardId: card.id },
+      orderBy: { createdAt: "desc" },
+      take: 8,
+    });
+    const thread = recent
+      .reverse()
+      .map((c) => `${c.author === "ai" ? "AI" : "Developer"}: ${c.body}`)
+      .join("\n");
+    const lead =
+      `The developer requested changes to the previous build. Address this feedback first, ` +
+      `then continue the workflow to update the existing files:\n\n${feedback}` +
+      (thread ? `\n\nDiscussion so far:\n${thread}` : "");
+
+    const workflow = workflowSchema.parse(JSON.parse(run.workflow));
+    workflow.inputs = { ...workflow.inputs, changeRequest: feedback };
+    const firstExec = workflow.stages.findIndex(
+      (s) => s.action !== "start" && s.action !== "end" && s.action !== "break",
+    );
+    workflow.stages = workflow.stages.map((s, i) =>
+      i === firstExec
+        ? { ...s, instruction: `${lead}\n\n${s.instruction ?? ""}`.trim() }
+        : s,
+    );
+    await this.runner.create({
+      projectId: card.projectId,
+      cwd: run.cwd ?? undefined,
+      title: card.title,
+      workflow,
+    });
+    await this.postAiComment(card.id, "On it — re-running this task to address your requested changes.");
   }
 
   private async respondWithModel(card: CardRow, humanBody: string): Promise<void> {

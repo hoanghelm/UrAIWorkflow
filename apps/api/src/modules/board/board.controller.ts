@@ -57,6 +57,11 @@ export class BoardController {
     return this.board.comments(id);
   }
 
+  @Delete(":id/comments/:commentId")
+  deleteComment(@Param("commentId") commentId: string) {
+    return this.board.deleteComment(commentId);
+  }
+
   @Post(":id/comments")
   addComment(
     @Param("id") id: string,

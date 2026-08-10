@@ -7,6 +7,7 @@ export { Drawer, type DrawerProps } from "./Drawer";
 export { Collapse, type CollapseProps } from "./Collapse";
 export { Tabs, type TabsProps } from "./Tabs";
 export { Input, TextArea, type InputProps } from "./Input";
+export { Mentions } from "./Mentions";
 export { Select, type SelectProps } from "./Select";
 export { Switch, type SwitchProps } from "./Switch";
 export { Space, type SpaceProps } from "./Space";

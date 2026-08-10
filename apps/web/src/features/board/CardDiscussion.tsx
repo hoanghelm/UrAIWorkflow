@@ -1,21 +1,28 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Button,
-  TextArea,
+  Mentions,
   Tag,
   Markdown,
   TypingDots,
   RobotOutlined,
   CheckOutlined,
   CloseOutlined,
+  DeleteOutlined,
   notify,
 } from "@/components/ui";
 import { api } from "@/lib/api";
 
+const MODEL_MENTIONS = [
+  { value: "opus", label: "opus" },
+  { value: "sonnet", label: "sonnet" },
+  { value: "haiku", label: "haiku" },
+];
+
 type Kind = "comment" | "approve" | "request_changes";
 
-const MENTION = /@(model|ai)\b/i;
+const MENTION = /@\w+/;
 
 const KIND_TAG: Record<string, { label: string; color: string }> = {
   approve: { label: "approved", color: "green" },
@@ -31,6 +38,7 @@ export function CardDiscussion({
   canReview: boolean;
   onReview: (state: "approved" | "changes_requested") => void;
 }) {
+  const qc = useQueryClient();
   const { data: comments = [], refetch } = useQuery({
     queryKey: ["board-comments", cardId],
     queryFn: () => api.boardComments(cardId),
@@ -39,11 +47,16 @@ export function CardDiscussion({
   const [busy, setBusy] = useState(false);
   const [aiPending, setAiPending] = useState(false);
 
+  const remove = async (commentId: string) => {
+    await api.deleteBoardComment(cardId, commentId);
+    await refetch();
+  };
+
   const post = async (kind: Kind) => {
     if (kind === "comment" && !body.trim()) {
       return;
     }
-    const mentioned = kind === "comment" && MENTION.test(body);
+    const mentioned = kind === "request_changes" || (kind === "comment" && MENTION.test(body));
     setBusy(true);
     setAiPending(mentioned);
     try {
@@ -51,7 +64,10 @@ export function CardDiscussion({
       setBody("");
       await refetch();
       if (kind === "approve") onReview("approved");
-      if (kind === "request_changes") onReview("changes_requested");
+      if (kind === "request_changes") {
+        onReview("changes_requested");
+        void qc.invalidateQueries({ queryKey: ["runs"] });
+      }
     } catch {
       notify.error("Could not post the comment.");
     } finally {
@@ -69,7 +85,7 @@ export function CardDiscussion({
           {comments.map((c) => {
             const tag = KIND_TAG[c.kind];
             return (
-              <div key={c.id} className="flex gap-2">
+              <div key={c.id} className="group flex gap-2">
                 <span
                   className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] text-white ${
                     c.author === "ai" ? "bg-accent" : "bg-gray-500"
@@ -86,6 +102,13 @@ export function CardDiscussion({
                     <span className="text-xs text-faint">
                       {new Date(c.createdAt).toLocaleString()}
                     </span>
+                    <button
+                      onClick={() => remove(c.id)}
+                      title="Delete comment"
+                      className="ml-auto text-faint opacity-0 transition hover:text-red-500 group-hover:opacity-100"
+                    >
+                      <DeleteOutlined />
+                    </button>
                   </div>
                   {c.body && (
                     <div className="text-sm text-fg">
@@ -111,15 +134,16 @@ export function CardDiscussion({
       )}
 
       <div className="flex flex-col gap-2 border-t border-line pt-3">
-        <TextArea
+        <Mentions
           rows={2}
           value={body}
-          onChange={(e) => setBody(e.target.value)}
-          placeholder="Leave a comment mention @model to ask the AI to work on it"
+          onChange={(v) => setBody(v)}
+          options={MODEL_MENTIONS}
+          placeholder="Leave a comment. Type @ to mention a model to work on it"
         />
         <div className="flex flex-wrap items-center gap-2">
           <Button type="primary" size="small" loading={busy} onClick={() => post("comment")}>
-            {MENTION.test(body) ? "Ask @model" : "Comment"}
+            {MENTION.test(body) ? "Ask model" : "Comment"}
           </Button>
           {canReview && (
             <>

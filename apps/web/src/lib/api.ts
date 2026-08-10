@@ -255,6 +255,8 @@ export const api = {
     id: string,
     body: { body: string; kind?: "comment" | "approve" | "request_changes" },
   ) => client.post<BoardComment>(`/board/${id}/comments`, body).then((r) => r.data),
+  deleteBoardComment: (cardId: string, commentId: string) =>
+    client.delete<{ id: string }>(`/board/${cardId}/comments/${commentId}`).then((r) => r.data),
   boardArtifacts: (projectId: string) =>
     client.get<BoardCard[]>("/board/artifacts", { params: { projectId } }).then((r) => r.data),
   collectAllArtifacts: (projectId: string) =>
