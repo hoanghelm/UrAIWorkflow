@@ -46,6 +46,9 @@ apps/api/data/
 worktrees/
 .worktrees/
 
+# Generated example apps produced by runs
+examples/
+
 # Local Claude harness settings (keep shared .claude config, drop local overrides)
 **/settings.local.json
 .claude/settings.local.json
