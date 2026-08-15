@@ -1,4 +1,4 @@
-import { Controller, Get, Query } from "@nestjs/common";
+import { Controller, Get, Post, Query } from "@nestjs/common";
 import { StatsService } from "./stats.service";
 
 @Controller("stats")
@@ -8,5 +8,10 @@ export class StatsController {
   @Get()
   list(@Query("projectId") projectId?: string) {
     return this.stats.list(projectId);
+  }
+
+  @Post("backfill")
+  backfill(@Query("projectId") projectId: string) {
+    return this.stats.backfill(projectId);
   }
 }

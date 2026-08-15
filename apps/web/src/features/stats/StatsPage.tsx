@@ -1,16 +1,19 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { UsageStat } from "@vcc-workflow/schema";
 import {
+  Button,
   Card,
   Empty,
   Tag,
   Table,
   PageHeader,
+  notify,
   FundOutlined,
   RobotOutlined,
   BulbOutlined,
   ApiOutlined,
   ThunderboltOutlined,
+  ReloadOutlined,
   type Columns,
 } from "@/components/ui";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
@@ -28,12 +31,28 @@ export function StatsPage() {
   const dispatch = useAppDispatch();
   const currentId = useAppSelector((s) => s.projects.currentId);
   const list = useAppSelector((s) => s.stats.list);
+  const [rebuilding, setRebuilding] = useState(false);
 
   useEffect(() => {
     if (currentId) {
       void dispatch.stats.load(currentId);
     }
   }, [currentId, dispatch]);
+
+  const rebuild = async () => {
+    if (!currentId) {
+      return;
+    }
+    setRebuilding(true);
+    try {
+      const { runs, blocks } = await dispatch.stats.backfill(currentId);
+      notify.success("Usage rebuilt", `Read ${runs} runs, found ${blocks} blocks.`);
+    } catch {
+      notify.error("Could not rebuild usage from run history.");
+    } finally {
+      setRebuilding(false);
+    }
+  };
 
   const groups = useMemo(() => {
     const by = new Map<UsageStat["blockKind"], UsageStat[]>();
@@ -72,6 +91,13 @@ export function StatsPage() {
         icon={<FundOutlined />}
         title="Usage"
         subtitle="Which agents, skills, MCP servers, and tools your runs actually use."
+        extra={
+          currentId ? (
+            <Button icon={<ReloadOutlined />} loading={rebuilding} onClick={rebuild}>
+              Rebuild from history
+            </Button>
+          ) : undefined
+        }
       />
 
       {!currentId ? (

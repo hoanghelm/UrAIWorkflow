@@ -220,6 +220,10 @@ export const api = {
     client.get<LedgerSummary>(`/ledger/project/${projectId}`).then((r) => r.data),
   stats: (projectId: string) =>
     client.get<UsageStat[]>("/stats", { params: { projectId } }).then((r) => r.data),
+  statsBackfill: (projectId: string) =>
+    client
+      .post<{ runs: number; blocks: number }>("/stats/backfill", null, { params: { projectId } })
+      .then((r) => r.data),
   connectors: () => client.get<Connector[]>("/connectors").then((r) => r.data),
   createConnector: (input: CreateConnectorInput) =>
     client.post<Connector>("/connectors", input).then((r) => r.data),

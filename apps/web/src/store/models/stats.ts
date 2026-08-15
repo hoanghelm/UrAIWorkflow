@@ -20,5 +20,11 @@ export const stats = createModel<RootModel>()({
       dispatch.stats.setList(list);
       return list;
     },
+    async backfill(projectId: string) {
+      const result = await api.statsBackfill(projectId);
+      const list = await api.stats(projectId);
+      dispatch.stats.setList(list);
+      return result;
+    },
   }),
 });

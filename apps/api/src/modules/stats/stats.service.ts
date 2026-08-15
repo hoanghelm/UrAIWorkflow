@@ -84,6 +84,16 @@ export class StatsService {
     }
   }
 
+  async backfill(projectId: string): Promise<{ runs: number; blocks: number }> {
+    await this.prisma.usageStat.deleteMany({ where: { projectId } });
+    const runs = await this.prisma.run.findMany({ where: { projectId }, select: { id: true } });
+    for (const run of runs) {
+      await this.recordRun(run.id, projectId);
+    }
+    const blocks = await this.prisma.usageStat.count({ where: { projectId } });
+    return { runs: runs.length, blocks };
+  }
+
   async list(projectId?: string): Promise<UsageStat[]> {
     const rows = await this.prisma.usageStat.findMany({
       where: projectId ? { projectId } : {},
