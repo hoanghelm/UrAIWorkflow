@@ -34,6 +34,7 @@ export function useConnectors() {
   };
 
   const active = list.find((c) => c.active) ?? null;
+  const reload = () => dispatch.connectors.load();
 
-  return { list, active, testingId, create, activate, deactivate, remove, test };
+  return { list, active, testingId, create, activate, deactivate, remove, test, reload };
 }

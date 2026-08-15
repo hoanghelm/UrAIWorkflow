@@ -5,6 +5,7 @@ import {
   connectorSchema,
   createConnectorInputSchema,
   defaultClaudeModels,
+  defaultCopilotModels,
   modelMapSchema,
   type Connector,
   type ConnectorUsage,
@@ -13,6 +14,7 @@ import {
 } from "@vcc-workflow/schema";
 import { PrismaService } from "../../prisma/prisma.service";
 import { decryptSecret, encryptSecret, isEncrypted } from "./crypto";
+import { pollAccessToken, requestDeviceCode, type DeviceCode } from "./copilot";
 
 const loadAgentQuery = new Function(
   "return import('@anthropic-ai/claude-agent-sdk')",
@@ -62,6 +64,32 @@ export class ConnectorsService {
   async list(): Promise<Connector[]> {
     const rows = await this.prisma.connector.findMany({ orderBy: { createdAt: "desc" } });
     return rows.map((r) => this.mask(r));
+  }
+
+  async startCopilotLogin(): Promise<DeviceCode> {
+    return requestDeviceCode();
+  }
+
+  async pollCopilotLogin(
+    deviceCode: string,
+  ): Promise<{ status: "pending" | "authorized"; connector?: Connector }> {
+    const result = await pollAccessToken(deviceCode);
+    if (result.status !== "authorized" || !result.token) {
+      return { status: "pending" };
+    }
+    const models = modelMapSchema.parse(defaultCopilotModels());
+    const row = await this.prisma.connector.create({
+      data: {
+        id: nanoid(),
+        name: "GitHub Copilot",
+        provider: "copilot",
+        apiKey: encryptSecret(result.token),
+        baseUrl: null,
+        models: JSON.stringify(models),
+        active: false,
+      },
+    });
+    return { status: "authorized", connector: this.mask(row) };
   }
 
   async setActive(id: string): Promise<Connector> {

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const providerSchema = z.enum(["claude", "claude-agent"]);
+export const providerSchema = z.enum(["claude", "claude-agent", "copilot"]);
 export type Provider = z.infer<typeof providerSchema>;
 
 export const modelMapSchema = z.object({
@@ -29,10 +29,13 @@ export const createConnectorInputSchema = z
     baseUrl: z.string().optional(),
     models: modelMapSchema.partial().optional(),
   })
-  .refine((v) => v.provider === "claude-agent" || v.apiKey.length > 0, {
-    message: "apiKey is required for the claude provider",
-    path: ["apiKey"],
-  });
+  .refine(
+    (v) => v.provider === "claude-agent" || v.provider === "copilot" || v.apiKey.length > 0,
+    {
+      message: "apiKey is required for the claude provider",
+      path: ["apiKey"],
+    },
+  );
 export type CreateConnectorInput = z.infer<typeof createConnectorInputSchema>;
 
 export const modelUsageSchema = z.object({
@@ -57,4 +60,10 @@ export const defaultClaudeModels = (): ModelMap => ({
   opus: "claude-opus-4-8",
   sonnet: "claude-sonnet-5",
   haiku: "claude-haiku-4-5-20251001",
+});
+
+export const defaultCopilotModels = (): ModelMap => ({
+  opus: "gpt-4o",
+  sonnet: "gpt-4o",
+  haiku: "gpt-4o-mini",
 });

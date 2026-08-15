@@ -22,6 +22,16 @@ export class ConnectorsController {
     return this.connectors.create(body);
   }
 
+  @Post("copilot/login")
+  copilotLogin() {
+    return this.connectors.startCopilotLogin();
+  }
+
+  @Post("copilot/poll")
+  copilotPoll(@Body() body: { deviceCode: string }) {
+    return this.connectors.pollCopilotLogin(body.deviceCode);
+  }
+
   @Post("deactivate")
   deactivate() {
     return this.connectors.deactivate();

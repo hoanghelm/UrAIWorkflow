@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Connector } from "@vcc-workflow/schema";
 import {
   Button,
@@ -8,6 +8,7 @@ import {
   Popconfirm,
   Select,
   Space,
+  Spin,
   Switch,
   Table,
   Tag,
@@ -19,17 +20,68 @@ import {
   SaveOutlined,
   ExperimentOutlined,
   DeleteOutlined,
+  CopyOutlined,
   type Columns,
 } from "@/components/ui";
+import { api } from "@/lib/api";
 import { useConnectors } from "./useConnectors";
 
+interface CopilotLogin {
+  deviceCode: string;
+  userCode: string;
+  verificationUri: string;
+  interval: number;
+}
+
 export function ConnectorsPage() {
-  const { list, create, activate, deactivate, remove, test, testingId } = useConnectors();
+  const { list, create, activate, deactivate, remove, test, testingId, reload } = useConnectors();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [provider, setProvider] = useState<"claude" | "claude-agent">("claude-agent");
   const [apiKey, setApiKey] = useState("");
   const [baseUrl, setBaseUrl] = useState("");
+  const [copilot, setCopilot] = useState<CopilotLogin | null>(null);
+  const [copilotBusy, setCopilotBusy] = useState(false);
+  const pollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const stopCopilot = () => {
+    if (pollRef.current) {
+      clearTimeout(pollRef.current);
+      pollRef.current = null;
+    }
+    setCopilot(null);
+    setCopilotBusy(false);
+  };
+
+  useEffect(() => () => stopCopilot(), []);
+
+  const startCopilot = async () => {
+    setCopilotBusy(true);
+    try {
+      const login = await api.copilotLogin();
+      setCopilot(login);
+      const poll = async () => {
+        try {
+          const res = await api.copilotPoll(login.deviceCode);
+          if (res.status === "authorized") {
+            stopCopilot();
+            await reload();
+            notify.success("GitHub Copilot connected", "Activate it to run your work through Copilot.");
+            return;
+          }
+        } catch {
+          stopCopilot();
+          notify.error("Copilot sign-in failed or timed out. Try again.");
+          return;
+        }
+        pollRef.current = setTimeout(poll, (login.interval + 1) * 1000);
+      };
+      pollRef.current = setTimeout(poll, (login.interval + 1) * 1000);
+    } catch {
+      setCopilotBusy(false);
+      notify.error("Could not start GitHub Copilot sign-in.");
+    }
+  };
 
   const reset = () => {
     setName("");
@@ -112,9 +164,14 @@ export function ConnectorsPage() {
         title="Connectors"
         subtitle="Connect a model provider. The active connector runs your work."
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setOpen(true)}>
-            Add connector
-          </Button>
+          <Space>
+            <Button loading={copilotBusy && !copilot} onClick={startCopilot}>
+              Sign in with GitHub Copilot
+            </Button>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => setOpen(true)}>
+              Add connector
+            </Button>
+          </Space>
         }
       />
       <Card>
@@ -173,6 +230,50 @@ export function ConnectorsPage() {
             </p>
           )}
         </div>
+      </Modal>
+
+      <Modal
+        title="Sign in with GitHub Copilot"
+        open={Boolean(copilot)}
+        onCancel={stopCopilot}
+        footer={
+          <Button onClick={stopCopilot} danger>
+            Cancel
+          </Button>
+        }
+      >
+        {copilot ? (
+          <div className="flex flex-col gap-3 py-2">
+            <p className="text-sm">
+              Open the GitHub verification page and enter this code to authorize:
+            </p>
+            <div className="flex items-center gap-2">
+              <code className="rounded bg-surface-2 px-3 py-1.5 text-lg tracking-widest">
+                {copilot.userCode}
+              </code>
+              <Button
+                size="small"
+                icon={<CopyOutlined />}
+                onClick={() => {
+                  void navigator.clipboard?.writeText(copilot.userCode);
+                  notify.success("Code copied");
+                }}
+              >
+                Copy
+              </Button>
+            </div>
+            <a href={copilot.verificationUri} target="_blank" rel="noreferrer">
+              {copilot.verificationUri}
+            </a>
+            <div className="flex items-center gap-2 text-sm text-muted">
+              <Spin size="small" /> Waiting for you to authorize in GitHub...
+            </div>
+            <p className="text-xs text-faint">
+              Unofficial: this uses your own GitHub Copilot subscription through an unsupported API.
+              GitHub does not sanction third-party use and may suspend accounts. Use at your own risk.
+            </p>
+          </div>
+        ) : null}
       </Modal>
       </Card>
     </div>

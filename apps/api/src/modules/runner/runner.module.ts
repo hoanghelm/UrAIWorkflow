@@ -11,6 +11,7 @@ import { AGENT_PORT } from "./agent.port";
 import { StubAgentAdapter } from "./agent.stub";
 import { ClaudeAgentAdapter } from "./agent.claude";
 import { ClaudeSubscriptionAdapter } from "./agent.subscription";
+import { CopilotAgentAdapter } from "./agent.copilot";
 import { AgentRouter } from "./agent.router";
 
 @Module({
@@ -23,6 +24,7 @@ import { AgentRouter } from "./agent.router";
     StubAgentAdapter,
     ClaudeAgentAdapter,
     ClaudeSubscriptionAdapter,
+    CopilotAgentAdapter,
     AgentRouter,
     { provide: AGENT_PORT, useClass: AgentRouter },
   ],

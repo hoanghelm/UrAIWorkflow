@@ -235,6 +235,22 @@ export const api = {
     client.get<ConnectorUsage>("/connectors/usage").then((r) => r.data),
   testConnector: (id: string) =>
     client.post<{ ok: boolean; error?: string }>(`/connectors/${id}/test`).then((r) => r.data),
+  copilotLogin: () =>
+    client
+      .post<{
+        deviceCode: string;
+        userCode: string;
+        verificationUri: string;
+        interval: number;
+        expiresIn: number;
+      }>("/connectors/copilot/login")
+      .then((r) => r.data),
+  copilotPoll: (deviceCode: string) =>
+    client
+      .post<{ status: "pending" | "authorized"; connector?: Connector }>("/connectors/copilot/poll", {
+        deviceCode,
+      })
+      .then((r) => r.data),
   deleteConnector: (id: string) =>
     client.delete<{ id: string }>(`/connectors/${id}`).then((r) => r.data),
   triggers: (projectId?: string) =>
