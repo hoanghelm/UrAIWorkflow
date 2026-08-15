@@ -12,6 +12,7 @@ import {
   type ModelMap,
 } from "@vcc-workflow/schema";
 import { PrismaService } from "../../prisma/prisma.service";
+import { decryptSecret, encryptSecret, isEncrypted } from "./crypto";
 
 const loadAgentQuery = new Function(
   "return import('@anthropic-ai/claude-agent-sdk')",
@@ -49,7 +50,7 @@ export class ConnectorsService {
         id: nanoid(),
         name: parsed.name,
         provider: parsed.provider,
-        apiKey: parsed.apiKey,
+        apiKey: encryptSecret(parsed.apiKey),
         baseUrl: parsed.baseUrl ?? null,
         models: JSON.stringify(models),
         active: false,
@@ -114,10 +115,16 @@ export class ConnectorsService {
     if (!row) {
       return null;
     }
+    if (row.apiKey && !isEncrypted(row.apiKey)) {
+      await this.prisma.connector.update({
+        where: { id: row.id },
+        data: { apiKey: encryptSecret(row.apiKey) },
+      });
+    }
     return {
       id: row.id,
       provider: row.provider,
-      apiKey: row.apiKey,
+      apiKey: decryptSecret(row.apiKey),
       baseUrl: row.baseUrl ?? undefined,
       models: JSON.parse(row.models) as ModelMap,
     };
@@ -126,6 +133,7 @@ export class ConnectorsService {
   async test(id: string): Promise<{ ok: boolean; error?: string }> {
     const row = await this.prisma.connector.findUniqueOrThrow({ where: { id } });
     const models = JSON.parse(row.models) as ModelMap;
+    const apiKey = decryptSecret(row.apiKey);
     if (row.provider === "claude-agent") {
       try {
         const { query } = await loadAgentQuery();
@@ -143,7 +151,7 @@ export class ConnectorsService {
       }
     }
     try {
-      const client = new Anthropic({ apiKey: row.apiKey, baseURL: row.baseUrl ?? undefined });
+      const client = new Anthropic({ apiKey, baseURL: row.baseUrl ?? undefined });
       await client.messages.create({
         model: models.haiku,
         max_tokens: 1,
