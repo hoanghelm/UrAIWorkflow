@@ -1,8 +1,9 @@
-import { Injectable, OnModuleInit } from "@nestjs/common";
+import { Injectable, NotFoundException, OnModuleInit } from "@nestjs/common";
 import { nanoid } from "nanoid";
 import { packManifestSchema, type PackManifest } from "@vcc-workflow/schema";
 import { PrismaService } from "../../prisma/prisma.service";
 import { builtinPacks } from "./builtin-packs";
+import { compareSemver } from "./semver";
 
 export interface PackSummary {
   id: string;
@@ -84,11 +85,12 @@ export class PacksService implements OnModuleInit {
   }
 
   async get(name: string): Promise<PackManifest> {
-    const row = await this.prisma.pack.findFirstOrThrow({
-      where: { name },
-      orderBy: { version: "desc" },
-    });
-    return packManifestSchema.parse(JSON.parse(row.manifest));
+    const rows = await this.prisma.pack.findMany({ where: { name } });
+    if (rows.length === 0) {
+      throw new NotFoundException(`Pack "${name}" not found`);
+    }
+    const latest = [...rows].sort((a, b) => compareSemver(b.version, a.version))[0];
+    return packManifestSchema.parse(JSON.parse(latest.manifest));
   }
 
   async setInstalled(id: string, installed: boolean): Promise<PackSummary> {

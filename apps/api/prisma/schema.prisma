@@ -25,6 +25,8 @@ model CatalogItem {
   scope     String
   path      String?
   trust     String  @default("community")
+  version   String  @default("0.0.0")
+  source    String  @default("discovered")
   meta      String  @default("{}")
   projectId String?
 
@@ -234,4 +236,17 @@ model LedgerEntry {
   run Run @relation(fields: [runId], references: [id], onDelete: Cascade)
 
   @@index([runId])
+}
+
+model UsageStat {
+  id          String   @id @default(cuid())
+  projectId   String?
+  blockKind   String
+  blockName   String
+  invocations Int      @default(0)
+  lastUsedAt  DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([projectId, blockKind, blockName])
+  @@index([projectId])
 }

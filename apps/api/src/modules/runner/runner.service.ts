@@ -21,6 +21,7 @@ import { Semaphore } from "./semaphore";
 import { HeadroomService } from "./headroom.service";
 import { WorktreeService } from "../board/worktree.service";
 import { ArtifactsService } from "../board/artifacts.service";
+import { StatsService } from "../stats/stats.service";
 
 const MAX_CONCURRENT_AI = 3;
 
@@ -65,6 +66,7 @@ export class RunnerService implements OnModuleDestroy {
     private readonly headroom: HeadroomService,
     private readonly worktrees: WorktreeService,
     private readonly artifactSvc: ArtifactsService,
+    private readonly stats: StatsService,
     @Inject(AGENT_PORT) private readonly agent: AgentPort,
   ) {}
 
@@ -785,6 +787,7 @@ export class RunnerService implements OnModuleDestroy {
 
       await this.setStatus(runId, "done");
       await this.syncBoardOnFinish(runId, workflow);
+      await this.stats.recordRun(runId, runRow.projectId ?? undefined).catch(() => {});
       await this.emit(runId, { status: "done", message: "Run complete" });
     } finally {
       this.running.delete(runId);

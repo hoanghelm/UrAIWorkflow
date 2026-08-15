@@ -14,6 +14,7 @@ import { DiagramsModule } from "./modules/diagrams/diagrams.module";
 import { AiModule } from "./modules/ai/ai.module";
 import { FigmaModule } from "./modules/figma/figma.module";
 import { HealthModule } from "./modules/health/health.module";
+import { StatsModule } from "./modules/stats/stats.module";
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { HealthModule } from "./modules/health/health.module";
     AiModule,
     FigmaModule,
     HealthModule,
+    StatsModule,
   ],
 })
 export class AppModule {}

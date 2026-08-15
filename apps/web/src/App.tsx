@@ -9,6 +9,7 @@ import {
   PartitionOutlined,
   ThunderboltOutlined,
   FundOutlined,
+  ProfileOutlined,
   DatabaseOutlined,
   ApiOutlined,
   RobotOutlined,
@@ -43,6 +44,7 @@ import { RunDetailPage } from "@/features/runs/RunDetailPage";
 import { WorkflowBuilderPage } from "@/features/workflow/WorkflowBuilderPage";
 import { ConnectorsPage } from "@/features/connectors/ConnectorsPage";
 import { TokensPage } from "@/features/dashboard/TokensPage";
+import { StatsPage } from "@/features/stats/StatsPage";
 import { ActivityProvider } from "@/lib/activity/ActivityProvider";
 import { ActivityBar } from "@/features/activity/ActivityBar";
 import { AiBuilderFab } from "@/features/ai/AiBuilderFab";
@@ -73,6 +75,7 @@ const NAV: NavItem[] = [
   { key: "/artifacts", label: "Artifacts", icon: <FileZipOutlined /> },
   { key: "/triggers", label: "Triggers", icon: <ClockCircleOutlined /> },
   { key: "/tokens", label: "Tokens", icon: <FundOutlined /> },
+  { key: "/usage", label: "Usage", icon: <ProfileOutlined /> },
   { key: "/catalog", label: "Catalog", icon: <DatabaseOutlined /> },
   { key: "/connectors", label: "Connectors", icon: <ApiOutlined /> },
 ];
@@ -126,6 +129,7 @@ function DashboardApp() {
         <Route path="/artifacts" element={<ArtifactsPage />} />
         <Route path="/triggers" element={<TriggersPage />} />
         <Route path="/tokens" element={<TokensPage />} />
+        <Route path="/usage" element={<StatsPage />} />
         <Route path="/catalog" element={<CatalogPage />} />
         <Route path="/connectors" element={<ConnectorsPage />} />
       </Routes>

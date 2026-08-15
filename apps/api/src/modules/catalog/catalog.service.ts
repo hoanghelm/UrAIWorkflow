@@ -49,7 +49,6 @@ export class CatalogService implements OnModuleInit {
   }
 
   async seedBuiltins(): Promise<void> {
-    await this.prisma.catalogItem.deleteMany({ where: { id: { startsWith: BUILTIN_PREFIX } } });
     const rows: ReturnType<CatalogService["builtinRow"]>[] = [
       ...BUILTIN_AGENTS.map((a) =>
         this.builtinRow("agent", a.name, a.title, a.description, {
@@ -70,8 +69,11 @@ export class CatalogService implements OnModuleInit {
       ),
     ];
     for (const row of rows) {
-      await this.prisma.catalogItem.create({ data: row });
+      await this.prisma.catalogItem.upsert({ where: { id: row.id }, create: row, update: row });
     }
+    await this.prisma.catalogItem.deleteMany({
+      where: { id: { startsWith: BUILTIN_PREFIX }, NOT: { id: { in: rows.map((r) => r.id) } } },
+    });
   }
 
   private builtinRow(
@@ -88,6 +90,8 @@ export class CatalogService implements OnModuleInit {
       scope: "template",
       path: null,
       trust: "verified",
+      version: "1.0.0",
+      source: "builtin",
       projectId: null,
       meta: JSON.stringify({ title, description, builtin: true, ...extra }),
     };
@@ -281,6 +285,8 @@ export class CatalogService implements OnModuleInit {
       scope: item.scope,
       path: item.path ?? null,
       trust: item.trust,
+      version: item.version ?? "0.0.0",
+      source: item.source ?? "discovered",
       meta: JSON.stringify(item.meta ?? {}),
       projectId: item.projectId ?? null,
     };
@@ -293,6 +299,8 @@ export class CatalogService implements OnModuleInit {
     scope: string;
     path: string | null;
     trust: string;
+    version: string;
+    source: string;
     meta: string;
     projectId: string | null;
   }): CatalogItem {
@@ -308,6 +316,8 @@ export class CatalogService implements OnModuleInit {
       path: row.path ?? undefined,
       projectId: row.projectId ?? undefined,
       trust: row.trust as CatalogItem["trust"],
+      version: row.version,
+      source: row.source,
       meta,
     };
   }

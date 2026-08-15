@@ -22,6 +22,7 @@ const LABELS: Record<string, string> = {
   artifacts: "Artifacts",
   triggers: "Triggers",
   tokens: "Tokens",
+  usage: "Usage",
   catalog: "Catalog",
   connectors: "Connectors",
 };

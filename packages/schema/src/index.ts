@@ -4,6 +4,7 @@ export * from "./workflow";
 export * from "./run";
 export * from "./ledger";
 export * from "./catalog";
+export * from "./stats";
 export * from "./connector";
 export * from "./marketplace";
 export * from "./trigger";

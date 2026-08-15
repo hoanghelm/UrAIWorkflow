@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { LedgerModule } from "../ledger/ledger.module";
 import { ConnectorsModule } from "../connectors/connectors.module";
 import { ArtifactsModule } from "../board/artifacts.module";
+import { StatsModule } from "../stats/stats.module";
 import { RunnerController } from "./runner.controller";
 import { RunnerService } from "./runner.service";
 import { RunnerGateway } from "./runner.gateway";
@@ -13,7 +14,7 @@ import { ClaudeSubscriptionAdapter } from "./agent.subscription";
 import { AgentRouter } from "./agent.router";
 
 @Module({
-  imports: [LedgerModule, ConnectorsModule, ArtifactsModule],
+  imports: [LedgerModule, ConnectorsModule, ArtifactsModule, StatsModule],
   controllers: [RunnerController],
   providers: [
     RunnerService,

@@ -18,6 +18,7 @@ import type {
   Project,
   RunEvent,
   Trigger,
+  UsageStat,
   Workflow,
 } from "@vcc-workflow/schema";
 
@@ -217,6 +218,8 @@ export const api = {
     client.get<LedgerSummary>(`/ledger/run/${runId}`).then((r) => r.data),
   ledgerProject: (projectId: string) =>
     client.get<LedgerSummary>(`/ledger/project/${projectId}`).then((r) => r.data),
+  stats: (projectId: string) =>
+    client.get<UsageStat[]>("/stats", { params: { projectId } }).then((r) => r.data),
   connectors: () => client.get<Connector[]>("/connectors").then((r) => r.data),
   createConnector: (input: CreateConnectorInput) =>
     client.post<Connector>("/connectors", input).then((r) => r.data),

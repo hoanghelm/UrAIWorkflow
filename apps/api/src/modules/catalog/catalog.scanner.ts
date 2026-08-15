@@ -33,6 +33,8 @@ export class CatalogScanner {
         path: path.join(root, ".mcp.json"),
         projectId,
         trust: "community",
+        version: "0.0.0",
+        source: "discovered",
         meta: {},
       });
     }
@@ -46,6 +48,8 @@ export class CatalogScanner {
         path: path.join(claudeDir, "plugins"),
         projectId,
         trust: "community",
+        version: "0.0.0",
+        source: "discovered",
         meta: {},
       });
     }
@@ -86,6 +90,8 @@ export class CatalogScanner {
           path: itemPath,
           projectId,
           trust: "community",
+          version: "0.0.0",
+          source: "discovered",
           meta,
         });
       }

@@ -142,6 +142,7 @@ test("budget guardrail breaches on cumulative tokens across a resume, not just t
     pack: async () => ({ path: "", sizeBytes: 0, fileCount: 0 }),
     unpack: async () => {},
   } as any;
+  const fakeStats = { recordRun: async () => {}, list: async () => [] } as any;
   const runner = new RunnerService(
     prisma as any,
     fakeLedger,
@@ -149,6 +150,7 @@ test("budget guardrail breaches on cumulative tokens across a resume, not just t
     fakeHeadroom as any,
     fakeWorktrees,
     fakeArtifacts,
+    fakeStats,
     agent,
   );
 

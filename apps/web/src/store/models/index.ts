@@ -5,6 +5,7 @@ import { packs } from "./packs";
 import { runs } from "./runs";
 import { connectors } from "./connectors";
 import { marketplace } from "./marketplace";
+import { stats } from "./stats";
 
 export interface RootModel extends Models<RootModel> {
   projects: typeof projects;
@@ -13,6 +14,7 @@ export interface RootModel extends Models<RootModel> {
   runs: typeof runs;
   connectors: typeof connectors;
   marketplace: typeof marketplace;
+  stats: typeof stats;
 }
 
-export const models: RootModel = { projects, catalog, packs, runs, connectors, marketplace };
+export const models: RootModel = { projects, catalog, packs, runs, connectors, marketplace, stats };

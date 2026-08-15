@@ -27,6 +27,8 @@ export const catalogItemSchema = z.object({
   path: z.string().optional(),
   projectId: z.string().optional(),
   trust: trustTierSchema.default("community"),
+  version: z.string().default("0.0.0"),
+  source: z.string().default("discovered"),
   meta: z.record(z.unknown()).default({}),
 });
 export type CatalogItem = z.infer<typeof catalogItemSchema>;
