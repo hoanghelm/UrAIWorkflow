@@ -125,9 +125,7 @@ export function DiagramsPage() {
         const next = await mermaidToScene(res.mermaid);
         setScene(next);
         setSceneKey((k) => k + 1);
-      } catch {
-        /* non-flowchart diagrams stay in code view */
-      }
+      } catch {}
     }
     return "Updated the diagram. Check the preview and ask for changes to refine it.";
   };

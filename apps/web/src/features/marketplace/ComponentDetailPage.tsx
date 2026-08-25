@@ -81,7 +81,6 @@ export function ComponentDetailPage() {
         <ArrowLeftOutlined /> Back
       </button>
 
-      {/* Header */}
       <div className="flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-900">
         <span
           className="flex h-16 w-16 items-center justify-center rounded-xl text-3xl text-white"
@@ -111,7 +110,6 @@ export function ComponentDetailPage() {
         </Button>
       </div>
 
-      {/* Install command */}
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-900">
         <div className="mb-3 flex items-center justify-between">
           <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted">
@@ -145,7 +143,6 @@ export function ComponentDetailPage() {
         </div>
       )}
 
-      {/* Content */}
       <div>
         <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-faint">
           Content

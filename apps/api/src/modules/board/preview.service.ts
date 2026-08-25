@@ -162,9 +162,7 @@ export class PreviewService {
             note: `Web app (build script present). Serving ${dir} after build.`,
           };
         }
-      } catch {
-        /* ignore */
-      }
+      } catch {}
     }
     if (entries.includes("index.html")) {
       return { runnable: true, kind: "static", install: "", build: "", serve: "", dir: ".", port: 0, note: "Static site." };

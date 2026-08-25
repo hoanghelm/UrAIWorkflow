@@ -157,7 +157,6 @@ export function DesignGalleryPage() {
         What should we create?
       </h1>
 
-      {/* Composer */}
       <div className="rounded-2xl border border-line bg-surface p-4 shadow-sm">
         <TextArea
           value={prompt}
@@ -208,7 +207,6 @@ export function DesignGalleryPage() {
         )}
       </div>
 
-      {/* Templates */}
       <div className="flex flex-col gap-3">
         <div className="text-xs font-semibold uppercase tracking-wide text-blue-500">Choose a template</div>
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
@@ -230,7 +228,6 @@ export function DesignGalleryPage() {
         </div>
       </div>
 
-      {/* Projects */}
       <div className="flex flex-col gap-3">
         <div className="flex items-center gap-3 border-b border-line pb-2">
           <span className="text-sm font-semibold text-fg">Projects</span>

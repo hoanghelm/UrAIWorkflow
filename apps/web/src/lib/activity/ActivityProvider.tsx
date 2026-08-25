@@ -33,9 +33,7 @@ export function ActivityProvider({ children }: { children: ReactNode }) {
             taskStore.setStatus(r.id, r.status);
           }
         }
-      } catch {
-        /* offline; sockets will populate */
-      }
+      } catch {}
     };
     void seedActiveTasks();
     const offReconnect = onReconnect(() => void seedActiveTasks());

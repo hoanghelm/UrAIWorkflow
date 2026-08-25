@@ -43,9 +43,7 @@ function detect(): string | null {
     if (out && exists(out)) {
       return out;
     }
-  } catch {
-    /* not on PATH */
-  }
+  } catch {}
 
   return null;
 }
@@ -81,9 +79,7 @@ function detectGitBash(): string | null {
         return candidate;
       }
     }
-  } catch {
-    /* git not on PATH */
-  }
+  } catch {}
 
   try {
     const lines = execSync("where bash", { stdio: ["ignore", "pipe", "ignore"] })
@@ -95,9 +91,7 @@ function detectGitBash(): string | null {
     if (gitBash && exists(gitBash)) {
       return gitBash;
     }
-  } catch {
-    /* bash not on PATH */
-  }
+  } catch {}
 
   for (const candidate of [
     "C:\\Program Files\\Git\\bin\\bash.exe",

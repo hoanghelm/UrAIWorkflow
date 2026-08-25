@@ -102,9 +102,7 @@ export class WorktreeService {
   async remove(root: string, worktreePath: string): Promise<void> {
     try {
       await run("git", ["-C", root, "worktree", "remove", "--force", worktreePath]);
-    } catch {
-      /* best effort */
-    }
+    } catch {}
   }
 
   async changedFiles(worktree: string): Promise<Artifact[]> {
