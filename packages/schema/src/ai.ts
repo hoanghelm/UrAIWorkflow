@@ -6,6 +6,8 @@ export const aiGenerateInputSchema = z.object({
   context: z.string().default(""),
   persona: z.string().optional(),
   streamId: z.string().optional(),
+  model: z.enum(["opus", "sonnet", "haiku"]).optional(),
+  guidance: z.string().optional(),
 });
 export type AiGenerateInput = z.infer<typeof aiGenerateInputSchema>;
 

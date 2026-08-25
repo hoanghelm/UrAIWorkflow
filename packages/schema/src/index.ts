@@ -10,5 +10,6 @@ export * from "./marketplace";
 export * from "./trigger";
 export * from "./board";
 export * from "./diagram";
+export * from "./design";
 export * from "./ai";
 export * from "./health";

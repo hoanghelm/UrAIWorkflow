@@ -80,7 +80,7 @@ export function DiagramsPage() {
 
   const loadFromProject = async () => {
     if (!currentId) {
-      notify.error("Select a project first");
+      notify.error("Select a workspace first.");
       return;
     }
     setLoading(true);

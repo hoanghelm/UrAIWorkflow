@@ -3,6 +3,8 @@ import type { StageRequest, StageResult } from "./agent.port";
 import type { ActiveConnector } from "../connectors/connectors.service";
 import { PrismaService } from "../../prisma/prisma.service";
 import { RunnerGateway } from "./runner.gateway";
+import { resolveClaudeExecutable, ensureAgentEnv } from "./claude-executable";
+import { resolveAllowedModel } from "../../common/server-policy";
 
 const FLUSH_EVERY_CHARS = 300;
 
@@ -19,6 +21,7 @@ interface AgentQueryOptions {
   mcpServers?: Record<string, unknown>;
   additionalDirectories?: string[];
   abortController?: AbortController;
+  pathToClaudeCodeExecutable?: string;
 }
 
 interface ContentBlock {
@@ -81,8 +84,11 @@ export class ClaudeSubscriptionAdapter {
   }
 
   async run(request: StageRequest, connector: ActiveConnector): Promise<StageResult> {
-    const model = connector.models[request.model as Tier] ?? request.model;
+    const tier = resolveAllowedModel(request.model) as Tier;
+    const model = connector.models[tier] ?? request.model;
+    ensureAgentEnv();
     const { query } = await loadQuery();
+    const claudeExecutable = resolveClaudeExecutable();
 
     const directives = request.levers
       .map((l) => LEVER_DIRECTIVE[l])
@@ -116,6 +122,7 @@ export class ClaudeSubscriptionAdapter {
           includePartialMessages: true,
           cwd: request.cwd,
           additionalDirectories: [],
+          ...(claudeExecutable ? { pathToClaudeCodeExecutable: claudeExecutable } : {}),
           ...(request.abortController ? { abortController: request.abortController } : {}),
           ...(request.mcpServers ? { mcpServers: request.mcpServers } : {}),
         }
@@ -125,6 +132,7 @@ export class ClaudeSubscriptionAdapter {
           allowedTools: [],
           permissionMode: "bypassPermissions",
           includePartialMessages: true,
+          ...(claudeExecutable ? { pathToClaudeCodeExecutable: claudeExecutable } : {}),
           ...(request.abortController ? { abortController: request.abortController } : {}),
         };
 
@@ -200,7 +208,7 @@ export class ClaudeSubscriptionAdapter {
         }
       } else if (message.type === "result") {
         const usage = message.usage ?? {};
-        input = usage.input_tokens ?? 0;
+        input = (usage.input_tokens ?? 0) + (usage.cache_creation_input_tokens ?? 0);
         output = usage.output_tokens ?? 0;
         cached = usage.cache_read_input_tokens ?? 0;
       }

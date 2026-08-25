@@ -3,6 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { StageRequest, StageResult } from "./agent.port";
 import type { ActiveConnector } from "../connectors/connectors.service";
 import { RunnerGateway } from "./runner.gateway";
+import { resolveAllowedModel } from "../../common/server-policy";
 
 type Tier = "opus" | "sonnet" | "haiku";
 
@@ -17,7 +18,8 @@ export class ClaudeAgentAdapter {
   constructor(private readonly gateway: RunnerGateway) {}
 
   async run(request: StageRequest, connector: ActiveConnector): Promise<StageResult> {
-    const model = connector.models[request.model as Tier] ?? request.model;
+    const tier = resolveAllowedModel(request.model) as Tier;
+    const model = connector.models[tier] ?? request.model;
     const client = new Anthropic({ apiKey: connector.apiKey, baseURL: connector.baseUrl });
 
     const directives = request.levers
@@ -46,10 +48,12 @@ export class ClaudeAgentAdapter {
     });
     const response = await stream.finalMessage();
 
-    const input = response.usage?.input_tokens ?? 0;
-    const output = response.usage?.output_tokens ?? 0;
-    const cached =
-      (response.usage as { cache_read_input_tokens?: number } | undefined)?.cache_read_input_tokens ?? 0;
+    const usage = response.usage as
+      | { input_tokens?: number; output_tokens?: number; cache_read_input_tokens?: number; cache_creation_input_tokens?: number }
+      | undefined;
+    const input = (usage?.input_tokens ?? 0) + (usage?.cache_creation_input_tokens ?? 0);
+    const output = usage?.output_tokens ?? 0;
+    const cached = usage?.cache_read_input_tokens ?? 0;
     const text = response.content
       .map((block) => (block.type === "text" ? block.text : ""))
       .join("");

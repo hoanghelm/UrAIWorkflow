@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: uraiworkflow-db
+    environment:
+      POSTGRES_USER: vcc
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vcc}
+      POSTGRES_DB: vcc
+    volumes:
+      - vcc-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vcc -d vcc"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  app:
+    build: .
+    image: uraiworkflow
+    container_name: uraiworkflow
+    ports:
+      - "5173:5173" # web dashboard
+      - "3001:3001" # API + Swagger at /api/docs
+    environment:
+      - PORT=3001
+      - WEB_ORIGIN=${WEB_ORIGIN:-http://localhost:5173}
+      - DEPLOYMENT_MODE=hosted
+      - DATABASE_URL=postgresql://vcc:${POSTGRES_PASSWORD:-vcc}@db:5432/vcc
+      - HOSTED_ACCESS_TOKEN=${HOSTED_ACCESS_TOKEN:?set HOSTED_ACCESS_TOKEN in your environment}
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "pnpm --filter @vcc-workflow/api prisma:pg:generate
+      && pnpm --filter @vcc-workflow/api prisma:pg:deploy
+      && pnpm dev"
+    volumes:
+      - vcc-artifacts:/app/apps/api/data
+    restart: unless-stopped
+
+volumes:
+  vcc-pg:
+  vcc-artifacts:

@@ -5,16 +5,22 @@ import { z } from "zod";
 import {
   boardCardSchema,
   boardCommentSchema,
+  createBoardAutomationInputSchema,
   createBoardCardInputSchema,
   createBoardCommentInputSchema,
+  createSprintInputSchema,
   guardrailsSchema,
   itemTypeSchema,
   workflowSchema,
+  type BoardAutomation,
   type BoardCard,
   type BoardComment,
   type BoardStatus,
+  type CreateBoardAutomationInput,
   type CreateBoardCardInput,
   type CreateBoardCommentInput,
+  type CreateSprintInput,
+  type Sprint,
 } from "@vcc-workflow/schema";
 import { PrismaService } from "../../prisma/prisma.service";
 import { WorkflowService } from "../workflow/workflow.service";
@@ -53,6 +59,9 @@ interface CardRow {
   worktree: string | null;
   artifacts: string;
   links: string;
+  labels: string;
+  sprintId: string | null;
+  assignee: string | null;
   order: number;
 }
 
@@ -92,17 +101,139 @@ export class BoardService {
         model: parsed.model,
         maxLoops: parsed.maxLoops,
         status: "todo",
+        labels: JSON.stringify(parsed.labels),
+        sprintId: parsed.sprintId ?? null,
+        assignee: parsed.assignee ?? null,
         order: count,
       },
     });
+    this.runner.emitBoardChanged(row.projectId);
     return this.mask(row);
   }
 
-  async move(id: string, status: BoardStatus, order: number): Promise<BoardCard> {
+  async setLabels(id: string, labels: string[]): Promise<BoardCard> {
     const row = await this.prisma.boardCard.update({
       where: { id },
-      data: { status, order },
+      data: { labels: JSON.stringify(labels) },
     });
+    await this.applyAutomations(row.id, row.projectId, labels, row.runId);
+    this.runner.emitBoardChanged(row.projectId);
+    return this.mask(row);
+  }
+
+  async setAssignee(id: string, assignee: string | null): Promise<BoardCard> {
+    const row = await this.prisma.boardCard.update({
+      where: { id },
+      data: { assignee },
+    });
+    this.runner.emitBoardChanged(row.projectId);
+    return this.mask(row);
+  }
+
+  async updateCard(id: string, input: { title?: string; requirement?: string }): Promise<BoardCard> {
+    const data: { title?: string; requirement?: string } = {};
+    if (typeof input.title === "string") {
+      data.title = input.title;
+    }
+    if (typeof input.requirement === "string") {
+      data.requirement = input.requirement;
+    }
+    const row = await this.prisma.boardCard.update({ where: { id }, data });
+    this.runner.emitBoardChanged(row.projectId);
+    return this.mask(row);
+  }
+
+  async automations(projectId: string): Promise<BoardAutomation[]> {
+    const existing = await this.prisma.boardAutomation.count({ where: { projectId } });
+    if (existing === 0) {
+      await this.prisma.boardAutomation.create({
+        data: { id: nanoid(), projectId, trigger: "label:bug", action: "run", enabled: true },
+      });
+    }
+    const rows = await this.prisma.boardAutomation.findMany({
+      where: { projectId },
+      orderBy: { createdAt: "asc" },
+    });
+    return rows.map((r) => ({
+      id: r.id,
+      projectId: r.projectId,
+      trigger: r.trigger,
+      action: r.action,
+      enabled: r.enabled,
+    }));
+  }
+
+  async createAutomation(input: CreateBoardAutomationInput): Promise<BoardAutomation> {
+    const parsed = createBoardAutomationInputSchema.parse(input);
+    const row = await this.prisma.boardAutomation.create({
+      data: {
+        id: nanoid(),
+        projectId: parsed.projectId,
+        trigger: parsed.trigger,
+        action: parsed.action,
+        enabled: true,
+      },
+    });
+    return { id: row.id, projectId: row.projectId, trigger: row.trigger, action: row.action, enabled: row.enabled };
+  }
+
+  async toggleAutomation(id: string, enabled: boolean): Promise<BoardAutomation> {
+    const row = await this.prisma.boardAutomation.update({ where: { id }, data: { enabled } });
+    return { id: row.id, projectId: row.projectId, trigger: row.trigger, action: row.action, enabled: row.enabled };
+  }
+
+  async removeAutomation(id: string): Promise<{ id: string }> {
+    await this.prisma.boardAutomation.delete({ where: { id } });
+    return { id };
+  }
+
+  async sprints(projectId: string): Promise<Sprint[]> {
+    const rows = await this.prisma.sprint.findMany({
+      where: { projectId },
+      orderBy: { createdAt: "desc" },
+    });
+    return rows.map((r) => ({ id: r.id, projectId: r.projectId, name: r.name }));
+  }
+
+  async createSprint(input: CreateSprintInput): Promise<Sprint> {
+    const parsed = createSprintInputSchema.parse(input);
+    const row = await this.prisma.sprint.create({
+      data: { id: nanoid(), projectId: parsed.projectId, name: parsed.name },
+    });
+    return { id: row.id, projectId: row.projectId, name: row.name };
+  }
+
+  private async applyAutomations(
+    cardId: string,
+    projectId: string,
+    labels: string[],
+    runId: string | null,
+  ): Promise<void> {
+    if (runId) {
+      return;
+    }
+    const rules = await this.prisma.boardAutomation.findMany({
+      where: { projectId, enabled: true },
+    });
+    for (const rule of rules) {
+      const match = rule.trigger.startsWith("label:") && labels.includes(rule.trigger.slice(6));
+      if (!match) {
+        continue;
+      }
+      if (rule.action === "run") {
+        await this.run(cardId).catch(() => {});
+        return;
+      }
+    }
+  }
+
+  async move(id: string, status: BoardStatus, order: number): Promise<BoardCard> {
+    const reset = status === "todo" ? { runId: null, review: "none", worktree: null } : {};
+    const row = await this.prisma.boardCard.update({
+      where: { id },
+      data: { status, order, ...reset },
+    });
+    this.runner.emitBoardChanged(row.projectId);
     return this.mask(row);
   }
 
@@ -111,11 +242,26 @@ export class BoardService {
     return { id };
   }
 
+  private routePack(currentPack: string, title: string, requirement: string): string {
+    if (currentPack && currentPack !== "eng-loop") {
+      return currentPack;
+    }
+    const text = `${title} ${requirement}`.toLowerCase();
+    if (/\bfigma\b|design file/.test(text)) return "screen-from-figma";
+    if (/diagram|architecture chart|\bc4\b/.test(text)) return "tech-diagram";
+    if (/\breport\b|write.*\bdoc|documentation/.test(text)) return "content-ops";
+    if (/\betl\b|spreadsheet|data sync/.test(text)) return "data-sync";
+    return "eng-loop";
+  }
+
   async run(id: string): Promise<BoardCard> {
     const card = await this.prisma.boardCard.findUniqueOrThrow({ where: { id } });
     const project = await this.prisma.project.findUniqueOrThrow({ where: { id: card.projectId } });
     const worktree = await this.worktree.ensure(project.root, id);
-    const base = await this.workflow.fromPack(card.pack, { requirement: card.requirement });
+    const requirement =
+      [card.title, card.requirement].map((s) => s?.trim()).filter(Boolean).join("\n\n") || card.title;
+    const pack = this.routePack(card.pack, card.title, card.requirement);
+    const base = await this.workflow.fromPack(pack, { requirement });
     const guardrails = guardrailsSchema.parse({
       ...base.guardrails,
       maxLoopDepth: card.maxLoops,
@@ -136,6 +282,7 @@ export class BoardService {
       where: { id },
       data: { runId: created.id, status: "in_process", worktree },
     });
+    this.runner.emitBoardChanged(row.projectId);
     return this.mask(row);
   }
 
@@ -175,6 +322,7 @@ export class BoardService {
         pack: card.pack,
         model: card.model as "opus" | "sonnet" | "haiku",
         maxLoops: card.maxLoops,
+        labels: [],
       });
       created.push(child);
     }
@@ -433,6 +581,9 @@ export class BoardService {
       worktree: row.worktree,
       artifacts: JSON.parse(row.artifacts),
       links: JSON.parse(row.links),
+      labels: JSON.parse(row.labels || "[]"),
+      sprintId: row.sprintId,
+      assignee: row.assignee ?? null,
       order: row.order,
     });
   }

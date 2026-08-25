@@ -1,9 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { createConnectorInputSchema, type CreateConnectorInput } from "@vcc-workflow/schema";
 import { ZodValidationPipe } from "../../common/zod-validation.pipe";
+import { ConnectorsLockGuard } from "../../common/connectors-lock.guard";
 import { ConnectorsService } from "./connectors.service";
 
 @Controller("connectors")
+@UseGuards(ConnectorsLockGuard)
 export class ConnectorsController {
   constructor(private readonly connectors: ConnectorsService) {}
 
@@ -35,6 +37,21 @@ export class ConnectorsController {
   @Post("deactivate")
   deactivate() {
     return this.connectors.deactivate();
+  }
+
+  @Get("active")
+  projectActive(@Query("projectId") projectId: string) {
+    return this.connectors.projectActive(projectId);
+  }
+
+  @Post("active")
+  setActiveForProject(@Body() body: { projectId: string; connectorId: string }) {
+    return this.connectors.setActiveForProject(body.projectId, body.connectorId);
+  }
+
+  @Delete("active")
+  clearActiveForProject(@Query("projectId") projectId: string) {
+    return this.connectors.clearActiveForProject(projectId);
   }
 
   @Post(":id/activate")

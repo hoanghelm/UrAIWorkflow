@@ -1,13 +1,16 @@
 import { io, type Socket } from "socket.io-client";
 import type { RunEvent } from "@vcc-workflow/schema";
-
-const WS_URL = import.meta.env.VITE_WS_URL ?? "http://localhost:3001";
+import { wsBaseUrl, authToken } from "./servers";
 
 let socket: Socket | null = null;
 
 function connect(): Socket {
   if (!socket) {
-    socket = io(`${WS_URL}/runs`, { transports: ["websocket"] });
+    const token = authToken();
+    socket = io(`${wsBaseUrl()}/runs`, {
+      transports: ["websocket"],
+      ...(token ? { auth: { token } } : {}),
+    });
   }
   return socket;
 }
@@ -54,6 +57,14 @@ export function onRunStarted(handler: (meta: RunStarted) => void): () => void {
   s.on("run.started", handler);
   return () => {
     s.off("run.started", handler);
+  };
+}
+
+export function onBoardChanged(handler: (meta: { projectId?: string }) => void): () => void {
+  const s = connect();
+  s.on("board.changed", handler);
+  return () => {
+    s.off("board.changed", handler);
   };
 }
 

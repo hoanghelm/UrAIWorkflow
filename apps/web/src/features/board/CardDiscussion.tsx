@@ -138,8 +138,21 @@ export function CardDiscussion({
           rows={2}
           value={body}
           onChange={(v) => setBody(v)}
+          onKeyDown={(e) => {
+            if (
+              e.key === "Enter" &&
+              !e.shiftKey &&
+              !e.defaultPrevented &&
+              !(e.nativeEvent as { isComposing?: boolean }).isComposing &&
+              body.trim() &&
+              !busy
+            ) {
+              e.preventDefault();
+              void post("comment");
+            }
+          }}
           options={MODEL_MENTIONS}
-          placeholder="Leave a comment. Type @ to mention a model to work on it"
+          placeholder="Comment… @model to ask a model"
         />
         <div className="flex flex-wrap items-center gap-2">
           <Button type="primary" size="small" loading={busy} onClick={() => post("comment")}>

@@ -11,11 +11,13 @@ import {
   CloseOutlined,
   DownOutlined,
   StopOutlined,
+  BulbFilled,
+  BulbOutlined,
+  useThemeMode,
   notify,
 } from "@/components/ui";
 import { taskStore } from "@/lib/activity/tasks";
 import { UsageWidget } from "@/features/usage/ModelsUsageFab";
-import { ThemeToggle } from "@/components/ui";
 import { useTasks, useNotifications, useOutput } from "@/lib/activity/hooks";
 import { notificationStore, type AppNotification } from "@/lib/activity/notifications";
 import { outputStore } from "@/lib/activity/output";
@@ -27,7 +29,7 @@ import { LEVEL_META } from "./levelMeta";
 type Panel = "tasks" | "output" | "notifications" | null;
 
 const barBtn =
-  "flex h-full items-center gap-1.5 px-2 hover:bg-black/10 dark:hover:bg-white/10";
+  "flex h-full items-center gap-1.5 px-2.5 transition-colors hover:bg-white/15";
 
 function TasksPanel({
   tasks,
@@ -152,7 +154,8 @@ function OutputPanel({ tasks }: { tasks: ActivityTask[] }) {
       </div>
       <div
         ref={bodyRef}
-        className="h-64 overflow-auto bg-black/50 px-3 py-2 font-mono text-xs leading-relaxed"
+        className="h-64 overflow-auto px-3 py-2 font-mono text-xs leading-relaxed"
+        style={{ background: "#14161c", color: "#c9d1d9" }}
       >
         {lines.length === 0 ? (
           <div className="text-faint">No output yet.</div>
@@ -178,7 +181,7 @@ function OutputPanel({ tasks }: { tasks: ActivityTask[] }) {
   );
 }
 
-function NotifRow({ n }: { n: AppNotification }) {
+function NotifRow({ n, onReview }: { n: AppNotification; onReview?: (runId: string) => void }) {
   const [open, setOpen] = useState(false);
   const meta = LEVEL_META[n.level];
   return (
@@ -200,6 +203,14 @@ function NotifRow({ n }: { n: AppNotification }) {
           {n.description && open && (
             <p className="mt-1 whitespace-pre-wrap break-words text-xs text-muted">{n.description}</p>
           )}
+          {n.runId && onReview && (
+            <button
+              onClick={() => onReview(n.runId as string)}
+              className="mt-1 text-xs font-medium text-accent hover:underline"
+            >
+              Review run →
+            </button>
+          )}
         </div>
         <button onClick={() => notificationStore.remove(n.id)} className="text-faint hover:text-fg">
           <CloseOutlined className="text-[11px]" />
@@ -209,7 +220,7 @@ function NotifRow({ n }: { n: AppNotification }) {
   );
 }
 
-function NotificationCenter({ list }: { list: AppNotification[] }) {
+function NotificationCenter({ list, onReview }: { list: AppNotification[]; onReview: (runId: string) => void }) {
   return (
     <div className="fixed bottom-8 right-3 z-50 w-96 overflow-hidden rounded-lg border border-line bg-surface shadow-2xl">
       <div className="flex items-center justify-between border-b border-line px-3 py-2">
@@ -228,7 +239,7 @@ function NotificationCenter({ list }: { list: AppNotification[] }) {
         ) : (
           <div className="flex flex-col gap-0.5">
             {list.map((n) => (
-              <NotifRow key={n.id} n={n} />
+              <NotifRow key={n.id} n={n} onReview={onReview} />
             ))}
           </div>
         )}
@@ -241,6 +252,7 @@ export function ActivityBar() {
   const navigate = useNavigate();
   const tasks = useTasks();
   const notifs = useNotifications();
+  const { mode, toggle: toggleTheme } = useThemeMode();
   const [panel, setPanel] = useState<Panel>(null);
 
   const running = tasks.filter((t) => t.status === "running" || t.status === "needs_input").length;
@@ -265,22 +277,33 @@ export function ActivityBar() {
     <>
       {panel === "tasks" && <TasksPanel tasks={tasks} onOpen={openRun} onStop={stopTask} />}
       {panel === "output" && <OutputPanel tasks={tasks} />}
-      {panel === "notifications" && <NotificationCenter list={notifs} />}
+      {panel === "notifications" && <NotificationCenter list={notifs} onReview={openRun} />}
 
       <div
-        className="fixed bottom-0 left-0 right-0 z-40 flex h-7 items-center justify-end bg-surface-2 text-xs text-muted"
-        style={{ borderTop: "1px solid var(--vcc-line)" }}
+        className="fixed bottom-0 left-0 right-0 z-40 flex h-7 items-center justify-end pr-1 text-[11.5px] text-white"
+        style={{
+          background: "#2A6DAC",
+          borderTop: "1px solid rgba(255,255,255,.14)",
+          fontFamily: '"IBM Plex Mono", ui-monospace, monospace',
+          letterSpacing: ".01em",
+        }}
       >
+        {running > 0 && (
+          <span className="mr-auto flex h-full items-center gap-1.5 px-3 text-[11px] text-white">
+            <SyncOutlined spin />
+            {running} run{running === 1 ? "" : "s"} active
+          </span>
+        )}
         <button
           onClick={() => toggle("tasks")}
-          className={`${barBtn} ${panel === "tasks" ? "bg-black/10 dark:bg-white/10" : ""}`}
+          className={`${barBtn} ${panel === "tasks" ? "bg-white/20" : ""}`}
         >
-          {running > 0 ? <SyncOutlined spin className="text-accent" /> : <ProfileOutlined />}
+          {running > 0 ? <SyncOutlined spin /> : <ProfileOutlined />}
           <span>Tasks{running > 0 ? ` (${running})` : ""}</span>
         </button>
         <button
           onClick={() => toggle("output")}
-          className={`${barBtn} ${panel === "output" ? "bg-black/10 dark:bg-white/10" : ""}`}
+          className={`${barBtn} ${panel === "output" ? "bg-white/20" : ""}`}
         >
           <CodeOutlined />
           <span>Output</span>
@@ -291,7 +314,7 @@ export function ActivityBar() {
             toggle("notifications");
             notificationStore.markAllRead();
           }}
-          className={`${barBtn} ${panel === "notifications" ? "bg-black/10 dark:bg-white/10" : ""}`}
+          className={`${barBtn} ${panel === "notifications" ? "bg-white/20" : ""}`}
         >
           <BellOutlined />
           {unread > 0 && (
@@ -300,7 +323,9 @@ export function ActivityBar() {
             </span>
           )}
         </button>
-        <ThemeToggle />
+        <button onClick={toggleTheme} aria-label="Toggle theme" className={barBtn}>
+          {mode === "dark" ? <BulbFilled /> : <BulbOutlined />}
+        </button>
       </div>
     </>
   );

@@ -63,7 +63,7 @@ export function ComponentDetailPage() {
 
   const addToProject = async () => {
     if (!currentId) {
-      notify.error("Select a project first");
+      notify.error("Select a workspace first.");
       return;
     }
     setInstalling(true);

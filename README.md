@@ -80,6 +80,34 @@ docker compose up --build
 
 The image is a Debian (glibc) base so the Prisma engine and Claude Agent SDK native binaries load. See `Dockerfile` and `docker-compose.yml`.
 
+## Run hosted (PostgreSQL)
+
+The same codebase runs two ways, selected at boot by `DEPLOYMENT_MODE`:
+
+- **`local`** (default) — SQLite on disk, no auth.
+- **`hosted`** — PostgreSQL, and every route except `/api/health` and `/api/docs` requires `Authorization: Bearer <HOSTED_ACCESS_TOKEN>`.
+
+Three one-command entry points:
+
+```
+pnpm start:local     # local app on SQLite (default, no setup)
+pnpm server:dev      # server mode locally: auto-starts a local Postgres, then runs the app
+HOSTED_ACCESS_TOKEN=your-long-random-token pnpm server   # full hosted stack (app + Postgres) in Docker
+```
+
+- **`pnpm server:dev`** spins up a local `postgres:16` (via `docker-compose.db.yml`, on `localhost:5432`), applies the Postgres migrations, and runs the app in hosted mode with a `dev-token` (override with `HOSTED_ACCESS_TOKEN`). Best for developing against a real Postgres with hot reload. Requires Docker running.
+- **`pnpm server`** builds and runs both the app and Postgres as containers (`docker-compose.hosted.yml`); the app waits for the DB to be healthy, migrates, then starts. It refuses to start without `HOSTED_ACCESS_TOKEN`.
+- The database persists in the `vcc-pg` volume; the default database name is `vcc`.
+
+Postgres uses a **generated** schema (`prisma/postgres/schema.prisma`) kept in sync with the canonical SQLite schema — after changing `prisma/schema.prisma`, regenerate it and add a migration:
+
+```
+pnpm --filter @vcc-workflow/api gen:pg-schema
+pnpm --filter @vcc-workflow/api exec prisma migrate dev --schema=prisma/postgres/schema.prisma --name <change>
+```
+
+The connector API keys are encrypted at rest in both modes (`VCC_ENCRYPTION_KEY`, or a generated local key file). This hosted mode is deliberately lightweight — a single shared access token, no per-user tenants or managed model keys.
+
 ## Next: real agent adapter
 
 Implement `AgentPort.runStage` in a new `apps/api/src/modules/runner/agent.copilot.ts` against the GitHub Copilot SDK (`onPostToolUse` for tool-output compression, per-request model switch for phase routing), then bind it in `runner.module.ts` in place of `StubAgentAdapter`.

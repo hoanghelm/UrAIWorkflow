@@ -1,6 +1,13 @@
 import { BadRequestException, Injectable, type OnModuleInit } from "@nestjs/common";
 import { promises as fs } from "fs";
+import { existsSync } from "fs";
+import { execFile } from "child_process";
+import { promisify } from "util";
+import { homedir } from "os";
+import { join } from "path";
 import { nanoid } from "nanoid";
+
+const execFileAsync = promisify(execFile);
 import type { CatalogItem, ExplainCodeInput, Project } from "@vcc-workflow/schema";
 import { PrismaService } from "../../prisma/prisma.service";
 import { RunnerService } from "../runner/runner.service";
@@ -120,6 +127,24 @@ export class CatalogService implements OnModuleInit {
     });
     await this.discover(project.id);
     return { id: project.id, name: project.name, root: project.root, persona: project.persona };
+  }
+
+  async cloneProject(name: string, gitUrl: string, persona = "generalist"): Promise<Project> {
+    if (!/^(https?:\/\/|git@|ssh:\/\/)/.test(gitUrl.trim())) {
+      throw new BadRequestException("Enter a valid git URL (https, ssh or git@).");
+    }
+    const workspaces = process.env.WORKSPACES_ROOT ?? join(homedir(), ".vcc-workspaces");
+    await fs.mkdir(workspaces, { recursive: true });
+    const slug = (name.replace(/[^A-Za-z0-9._-]/g, "-") || `repo-${Date.now()}`).toLowerCase();
+    const dest = join(workspaces, slug);
+    if (!existsSync(dest)) {
+      try {
+        await execFileAsync("git", ["clone", gitUrl.trim(), dest], { maxBuffer: 64 * 1024 * 1024 });
+      } catch (error) {
+        throw new BadRequestException(`Clone failed: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+    return this.registerProject(name, dest, persona);
   }
 
   async setPersona(id: string, persona: string): Promise<Project> {

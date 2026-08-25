@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -133,10 +133,21 @@ export function RunDetailPage() {
   const isDeploy = shownStage?.stageId === "__deploy__";
   const isSynthetic = isBuild || isDeploy;
   const output = shownStage && !isSynthetic ? deltas[shownStage.stageId] || logs[shownStage.stageId] : "";
+
+  const traceRef = useRef<HTMLDivElement>(null);
+  const outputRef = useRef<HTMLPreElement>(null);
+  const tail = (el: HTMLElement | null) => {
+    if (el && el.scrollHeight - el.scrollTop - el.clientHeight < 80) {
+      el.scrollTop = el.scrollHeight;
+    }
+  };
   const trace = shownStage && !isSynthetic ? traces[shownStage.stageId] : "";
   const traceLines = trace ? trace.split("\n").filter((l) => l.trim()) : [];
   const stageEvents =
     shownStage && !isSynthetic ? events.filter((e) => e.stageId === shownStage.stageId) : [];
+
+  useEffect(() => tail(outputRef.current), [output]);
+  useEffect(() => tail(traceRef.current), [traceLines.length, showTrace]);
   const st = shownStage ? STAGE_STATE[shownStage.status] ?? STAGE_STATE.pending : STAGE_STATE.pending;
 
   return (
@@ -273,7 +284,10 @@ export function RunDetailPage() {
                 </div>
               )}
               {prev?.logs && prev.logs.length > 0 && (
-                <pre className="max-h-72 overflow-auto rounded bg-black/40 p-2 font-mono text-[10px] text-gray-300">
+                <pre
+                  className="max-h-72 overflow-auto rounded-md border p-3 font-mono text-[11px] leading-relaxed"
+                  style={{ background: "#14161c", color: "#c9d1d9", borderColor: "#262a33" }}
+                >
                   {prev.logs.join("\n")}
                 </pre>
               )}
@@ -281,7 +295,10 @@ export function RunDetailPage() {
           )}
           {!isSynthetic &&
             (output ? (
-              <pre className="max-h-[28rem] overflow-auto whitespace-pre-wrap rounded-md bg-surface-2 p-3 font-mono text-xs text-fg">
+              <pre
+                ref={outputRef}
+                className="max-h-[28rem] overflow-auto whitespace-pre-wrap rounded-md bg-surface-2 p-3 font-mono text-xs text-fg"
+              >
                 {output}
               </pre>
             ) : (
@@ -302,7 +319,7 @@ export function RunDetailPage() {
                 {showTrace ? "▾" : "▸"} AI activity ({traceLines.length})
               </button>
               {showTrace && (
-                <div className="max-h-72 overflow-auto rounded-md bg-surface-2 p-2 font-mono text-xs">
+                <div ref={traceRef} className="max-h-72 overflow-auto rounded-md bg-surface-2 p-2 font-mono text-xs">
                   {(() => {
                     const lastResult = traceLines.reduce(
                       (idx, l, i) => (l.trimStart().startsWith("result · ") ? i : idx),

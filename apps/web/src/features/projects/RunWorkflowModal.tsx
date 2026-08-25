@@ -65,7 +65,7 @@ export function RunWorkflowModal({
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Name this task, or leave blank to use the workflow name"
+              placeholder="Task name (optional)"
             />
           </div>
           <div>

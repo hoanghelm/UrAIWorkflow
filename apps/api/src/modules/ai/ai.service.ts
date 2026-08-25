@@ -37,7 +37,7 @@ export class AiService {
       deps,
     );
     const lens = input.persona ? personaByKey[input.persona]?.persona : undefined;
-    const persona = [lens, gen.persona].filter(Boolean).join("\n\n");
+    const persona = [lens, gen.persona, input.guidance].filter(Boolean).join("\n\n");
 
     const { text } = await this.runner.runAiSession({
       runId: input.streamId,
@@ -47,7 +47,7 @@ export class AiService {
       action: gen.action,
       instruction,
       persona: persona || undefined,
-      model: gen.model,
+      model: input.model ?? gen.model,
       input: { requirement: input.requirement, context: input.context },
     });
 

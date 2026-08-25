@@ -15,6 +15,7 @@ import {
 import { PrismaService } from "../../prisma/prisma.service";
 import { decryptSecret, encryptSecret, isEncrypted } from "./crypto";
 import { pollAccessToken, requestDeviceCode, type DeviceCode } from "./copilot";
+import { resolveClaudeExecutable, ensureAgentEnv } from "../runner/claude-executable";
 
 const loadAgentQuery = new Function(
   "return import('@anthropic-ai/claude-agent-sdk')",
@@ -138,11 +139,7 @@ export class ConnectorsService {
     };
   }
 
-  async getActive(): Promise<ActiveConnector | null> {
-    const row = await this.prisma.connector.findFirst({ where: { active: true } });
-    if (!row) {
-      return null;
-    }
+  private async toActive(row: ConnectorRow): Promise<ActiveConnector> {
     if (row.apiKey && !isEncrypted(row.apiKey)) {
       await this.prisma.connector.update({
         where: { id: row.id },
@@ -158,16 +155,60 @@ export class ConnectorsService {
     };
   }
 
+  async getActive(): Promise<ActiveConnector | null> {
+    const row = await this.prisma.connector.findFirst({ where: { active: true } });
+    return row ? this.toActive(row) : null;
+  }
+
+  async getActiveForProject(projectId?: string): Promise<ActiveConnector | null> {
+    if (projectId) {
+      const pick = await this.prisma.workspaceConnector.findUnique({ where: { projectId } });
+      if (pick) {
+        const row = await this.prisma.connector.findUnique({ where: { id: pick.connectorId } });
+        if (row) {
+          return this.toActive(row);
+        }
+      }
+    }
+    return this.getActive();
+  }
+
+  async setActiveForProject(projectId: string, connectorId: string): Promise<{ connectorId: string }> {
+    await this.prisma.workspaceConnector.upsert({
+      where: { projectId },
+      create: { projectId, connectorId },
+      update: { connectorId },
+    });
+    return { connectorId };
+  }
+
+  async clearActiveForProject(projectId: string): Promise<{ projectId: string }> {
+    await this.prisma.workspaceConnector.deleteMany({ where: { projectId } });
+    return { projectId };
+  }
+
+  async projectActive(projectId: string): Promise<{ connectorId: string | null }> {
+    const pick = await this.prisma.workspaceConnector.findUnique({ where: { projectId } });
+    return { connectorId: pick?.connectorId ?? null };
+  }
+
   async test(id: string): Promise<{ ok: boolean; error?: string }> {
     const row = await this.prisma.connector.findUniqueOrThrow({ where: { id } });
     const models = JSON.parse(row.models) as ModelMap;
     const apiKey = decryptSecret(row.apiKey);
     if (row.provider === "claude-agent") {
       try {
+        ensureAgentEnv();
         const { query } = await loadAgentQuery();
+        const claudeExecutable = resolveClaudeExecutable();
         for await (const message of query({
           prompt: "Reply with the single word: ok",
-          options: { model: models.haiku, allowedTools: [], permissionMode: "bypassPermissions" },
+          options: {
+            model: models.haiku,
+            allowedTools: [],
+            permissionMode: "bypassPermissions",
+            ...(claudeExecutable ? { pathToClaudeCodeExecutable: claudeExecutable } : {}),
+          },
         })) {
           if (message.type === "result") {
             return { ok: true };

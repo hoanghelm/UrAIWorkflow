@@ -1,5 +1,7 @@
 import axios from "axios";
+import { getActiveServer, apiBaseUrl } from "./servers";
 import type {
+  BoardAutomation,
   BoardCard,
   BoardComment,
   BoardStatus,
@@ -10,19 +12,60 @@ import type {
   CreateConnectorInput,
   CreateRunInput,
   CreateTriggerInput,
+  Design,
+  DesignArtifact,
+  DesignKind,
+  DesignVersion,
   GeneratedDiagram,
   LedgerSummary,
   MarketplaceItem,
   PackManifest,
   PersonaPack,
   Project,
+  Sprint,
   RunEvent,
   Trigger,
   UsageStat,
   Workflow,
 } from "@vcc-workflow/schema";
 
+export interface DesignWorkflowView {
+  kind: DesignKind;
+  label: string;
+  agent: string;
+  agentTitle: string;
+  model: string;
+  steps: { name: string; detail: string }[];
+  skills: { name: string; title: string }[];
+  rules: string[];
+  commands: string[];
+}
+
+export interface TestWorkflowView {
+  kind: string;
+  label: string;
+  agent: string;
+  agentTitle: string;
+  model: string;
+  format: "code" | "markdown";
+  steps: { name: string; detail: string }[];
+  skills: { name: string; title: string }[];
+  rules: string[];
+  commands: string[];
+}
+
 const client = axios.create({ baseURL: "/api" });
+
+client.interceptors.request.use((config) => {
+  const server = getActiveServer();
+  if (server.url) {
+    config.baseURL = apiBaseUrl();
+    if (server.token) {
+      config.headers.Authorization = `Bearer ${server.token}`;
+    }
+  }
+  return config;
+});
 
 export interface PackSummary {
   id: string;
@@ -34,6 +77,12 @@ export interface PackSummary {
   tags: string[];
   trust: string;
   installed: boolean;
+}
+
+export interface ProjectPackSummary extends PackSummary {
+  installedVersion: string | null;
+  latestVersion: string;
+  updateAvailable: boolean;
 }
 
 export interface RunStageRow {
@@ -157,6 +206,8 @@ export const api = {
       .then((r) => r.data),
   registerProject: (name: string, root: string, persona?: string) =>
     client.post<Project>("/catalog/projects", { name, root, persona }).then((r) => r.data),
+  cloneProject: (name: string, gitUrl: string, persona?: string) =>
+    client.post<Project>("/catalog/projects/clone", { name, gitUrl, persona }).then((r) => r.data),
   setProjectPersona: (id: string, persona: string) =>
     client.patch<Project>(`/catalog/projects/${id}/persona`, { persona }).then((r) => r.data),
   deleteProject: (id: string) =>
@@ -168,6 +219,14 @@ export const api = {
   catalog: (projectId?: string) =>
     client.get<CatalogItem[]>("/catalog", { params: { projectId } }).then((r) => r.data),
   packs: () => client.get<PackSummary[]>("/packs").then((r) => r.data),
+  packsForProject: (projectId: string) =>
+    client.get<ProjectPackSummary[]>(`/packs/project/${projectId}`).then((r) => r.data),
+  installPack: (name: string, projectId: string) =>
+    client
+      .post<{ packName: string; installedVersion: string }>(`/packs/${name}/install`, { projectId })
+      .then((r) => r.data),
+  uninstallPack: (name: string, projectId: string) =>
+    client.post<{ packName: string }>(`/packs/${name}/uninstall`, { projectId }).then((r) => r.data),
   pack: (name: string) => client.get<PackManifest>(`/packs/${name}`).then((r) => r.data),
   workflowFromPack: (pack: string, inputs: Record<string, unknown>) =>
     client.post<Workflow>("/workflows/from-pack", { pack, inputs }).then((r) => r.data),
@@ -183,6 +242,78 @@ export const api = {
       .post<{ kind: string; artifact: unknown; summary: string }>("/ai/generate", { kind, ...body })
       .then((r) => r.data),
   aiPersonas: () => client.get<PersonaPack[]>("/ai/personas").then((r) => r.data),
+
+  serverConfig: () =>
+    client
+      .get<{
+        mode: string;
+        authRequired: boolean;
+        version: string;
+        allowedModels: string[];
+        allowedProviders: string[];
+        connectorsLocked: boolean;
+      }>("/whoami")
+      .then((r) => r.data),
+  designWorkflows: () => client.get<DesignWorkflowView[]>("/design-workflows").then((r) => r.data),
+  testWorkflows: () => client.get<TestWorkflowView[]>("/test-workflows").then((r) => r.data),
+  generateTestPreview: (
+    kind: string,
+    requirement: string,
+    opts?: { context?: string; model?: "opus" | "sonnet" | "haiku"; streamId?: string },
+  ) =>
+    client
+      .post<{ content: string; format: "code" | "markdown"; summary: string }>("/test-generate", {
+        kind,
+        requirement,
+        ...opts,
+      })
+      .then((r) => r.data),
+  generateDesignPreview: (
+    kind: DesignKind,
+    requirement: string,
+    opts?: { context?: string; model?: "opus" | "sonnet" | "haiku"; streamId?: string },
+  ) =>
+    client
+      .post<{ content: string; format: "html" | "mermaid"; summary: string }>("/design-generate", {
+        kind,
+        requirement,
+        ...opts,
+      })
+      .then((r) => r.data),
+  designs: (projectId: string) =>
+    client.get<Design[]>("/designs", { params: { projectId } }).then((r) => r.data),
+  createDesign: (projectId: string, name: string, description = "") =>
+    client.post<Design>("/designs", { projectId, name, description }).then((r) => r.data),
+  design: (id: string) => client.get<Design>(`/designs/${id}`).then((r) => r.data),
+  renameDesign: (id: string, name: string, description?: string) =>
+    client.patch<Design>(`/designs/${id}`, { name, description }).then((r) => r.data),
+  deleteDesign: (id: string) => client.delete<{ id: string }>(`/designs/${id}`).then((r) => r.data),
+  designArtifacts: (designId: string) =>
+    client.get<DesignArtifact[]>(`/designs/${designId}/artifacts`).then((r) => r.data),
+  createDesignArtifact: (designId: string, kind: DesignKind, title: string, content = "") =>
+    client
+      .post<DesignArtifact>("/design-artifacts", { designId, kind, title, content })
+      .then((r) => r.data),
+  designArtifact: (id: string) =>
+    client.get<DesignArtifact>(`/design-artifacts/${id}`).then((r) => r.data),
+  updateDesignArtifact: (id: string, body: { title?: string; content?: string }) =>
+    client.patch<DesignArtifact>(`/design-artifacts/${id}`, body).then((r) => r.data),
+  deleteDesignArtifact: (id: string) =>
+    client.delete<{ id: string }>(`/design-artifacts/${id}`).then((r) => r.data),
+  designArtifactVersions: (id: string) =>
+    client.get<DesignVersion[]>(`/design-artifacts/${id}/versions`).then((r) => r.data),
+  restoreDesignVersion: (id: string, versionId: string) =>
+    client
+      .post<DesignArtifact>(`/design-artifacts/${id}/restore`, { versionId })
+      .then((r) => r.data),
+  generateDesignArtifact: (
+    id: string,
+    requirement: string,
+    opts?: { persona?: string; streamId?: string; model?: "opus" | "sonnet" | "haiku" },
+  ) =>
+    client
+      .post<DesignArtifact>(`/design-artifacts/${id}/generate`, { requirement, ...opts })
+      .then((r) => r.data),
   figmaGenerate: (projectId: string, figmaUrl: string, token: string, title?: string) =>
     client
       .post<{ runId: string }>("/figma/generate", { projectId, figmaUrl, token, title })
@@ -190,6 +321,19 @@ export const api = {
   runs: (projectId?: string) =>
     client.get<RunRow[]>("/runs", { params: { projectId } }).then((r) => r.data),
   run: (id: string) => client.get<RunRow>(`/runs/${id}`).then((r) => r.data),
+  runDiff: (id: string) =>
+    client
+      .get<{
+        patch: string;
+        files: { path: string; additions: number; deletions: number }[];
+        branch: string;
+        cwd: string;
+      }>(`/runs/${id}/diff`)
+      .then((r) => r.data),
+  runCommit: (id: string) =>
+    client
+      .post<{ committed: boolean; branch: string; sha?: string; message: string }>(`/runs/${id}/commit`)
+      .then((r) => r.data),
   headroom: () => client.get<Headroom>("/runs/headroom").then((r) => r.data),
   runLogs: (id: string) =>
     client
@@ -231,6 +375,18 @@ export const api = {
     client.post<Connector>(`/connectors/${id}/activate`).then((r) => r.data),
   deactivateConnectors: () =>
     client.post<Connector[]>("/connectors/deactivate").then((r) => r.data),
+  projectActiveConnector: (projectId: string) =>
+    client
+      .get<{ connectorId: string | null }>("/connectors/active", { params: { projectId } })
+      .then((r) => r.data),
+  setProjectActiveConnector: (projectId: string, connectorId: string) =>
+    client
+      .post<{ connectorId: string }>("/connectors/active", { projectId, connectorId })
+      .then((r) => r.data),
+  clearProjectActiveConnector: (projectId: string) =>
+    client
+      .delete<{ projectId: string }>("/connectors/active", { params: { projectId } })
+      .then((r) => r.data),
   connectorUsage: () =>
     client.get<ConnectorUsage>("/connectors/usage").then((r) => r.data),
   testConnector: (id: string) =>
@@ -304,6 +460,28 @@ export const api = {
     client.post<BoardCard[]>("/board/collect-all", { projectId }).then((r) => r.data),
   runBoardCard: (id: string) =>
     client.post<BoardCard>(`/board/${id}/run`).then((r) => r.data),
+  setBoardCardLabels: (id: string, labels: string[]) =>
+    client.patch<BoardCard>(`/board/${id}/labels`, { labels }).then((r) => r.data),
+  setBoardCardAssignee: (id: string, assignee: string | null) =>
+    client.patch<BoardCard>(`/board/${id}/assignee`, { assignee }).then((r) => r.data),
+  updateBoardCard: (id: string, body: { title?: string; requirement?: string }) =>
+    client.patch<BoardCard>(`/board/${id}`, body).then((r) => r.data),
+  boardSprints: (projectId: string) =>
+    client.get<Sprint[]>("/board/sprints", { params: { projectId } }).then((r) => r.data),
+  createBoardSprint: (projectId: string, name: string) =>
+    client.post<Sprint>("/board/sprints", { projectId, name }).then((r) => r.data),
+  boardAutomations: (projectId: string) =>
+    client
+      .get<BoardAutomation[]>("/board/automations", { params: { projectId } })
+      .then((r) => r.data),
+  createBoardAutomation: (projectId: string, trigger: string, action: string) =>
+    client
+      .post<BoardAutomation>("/board/automations", { projectId, trigger, action })
+      .then((r) => r.data),
+  toggleBoardAutomation: (id: string, enabled: boolean) =>
+    client.patch<BoardAutomation>(`/board/automations/${id}`, { enabled }).then((r) => r.data),
+  deleteBoardAutomation: (id: string) =>
+    client.delete<{ id: string }>(`/board/automations/${id}`).then((r) => r.data),
   planBoardCard: (id: string, streamId?: string) =>
     client.post<BoardCard[]>(`/board/${id}/plan`, { streamId }).then((r) => r.data),
   collectBoardCard: (id: string) =>

@@ -42,6 +42,16 @@ export class RunnerController {
     return this.runner.runArtifacts(id);
   }
 
+  @Get(":id/diff")
+  diff(@Param("id") id: string) {
+    return this.runner.diff(id);
+  }
+
+  @Post(":id/commit")
+  commit(@Param("id") id: string) {
+    return this.runner.commit(id);
+  }
+
   @Post()
   create(
     @Body(new ZodValidationPipe(createRunInputSchema)) body: CreateRunInput,

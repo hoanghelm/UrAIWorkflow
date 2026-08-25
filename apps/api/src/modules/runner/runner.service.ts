@@ -1,4 +1,6 @@
-import { Inject, Injectable, type OnModuleDestroy } from "@nestjs/common";
+import { Inject, Injectable, Logger, type OnModuleDestroy } from "@nestjs/common";
+import { execFile } from "child_process";
+import { existsSync } from "node:fs";
 import { nanoid } from "nanoid";
 import {
   guardrailsSchema,
@@ -72,6 +74,10 @@ export class RunnerService implements OnModuleDestroy {
 
   headroomSnapshot() {
     return this.headroom.snapshot();
+  }
+
+  emitBoardChanged(projectId: string): void {
+    this.gateway.emitBoardChanged(projectId);
   }
 
   private async resolvePersona(projectId: string | null, agentName: string): Promise<string | undefined> {
@@ -192,7 +198,14 @@ export class RunnerService implements OnModuleDestroy {
       !input.cwd && !input.cardId && project
         ? await this.worktrees.ensureIsolated(project.root, runId)
         : null;
-    const cwd = input.cwd ?? isolated ?? project?.root ?? undefined;
+    let cwd = input.cwd ?? isolated ?? project?.root ?? undefined;
+    if (cwd && !existsSync(cwd)) {
+      const fallback = project?.root && existsSync(project.root) ? project.root : undefined;
+      new Logger(RunnerService.name).warn(
+        `Run cwd does not exist: ${cwd}. Falling back to ${fallback ?? "process cwd"}.`,
+      );
+      cwd = fallback;
+    }
     const build = (await this.prisma.run.count({ where: { projectId: input.projectId } })) + 1;
     const runName =
       !input.cardId && project ? `${project.name} · build ${build}` : workflow.name;
@@ -326,6 +339,37 @@ export class RunnerService implements OnModuleDestroy {
       where: { id: `${task.id}::${stageId}` },
       data: { status },
     });
+    await this.syncChildrenProgress(task.id, runId);
+    this.gateway.emitBoardChanged();
+  }
+
+  private async syncChildrenProgress(taskId: string, runId: string, done = false): Promise<void> {
+    const children = await this.prisma.boardCard.findMany({
+      where: { parentId: taskId },
+      orderBy: { order: "asc" },
+      select: { id: true, status: true },
+    });
+    const planChildren = children.filter((c) => !c.id.includes("::") && c.status !== "cancelled");
+    if (planChildren.length === 0) {
+      return;
+    }
+    if (done) {
+      await this.prisma.boardCard.updateMany({
+        where: { id: { in: planChildren.map((c) => c.id) } },
+        data: { status: "review" },
+      });
+      return;
+    }
+    const stages = await this.prisma.stage.findMany({ where: { runId }, select: { status: true } });
+    const total = stages.length || 1;
+    const passed = stages.filter((s) => s.status === "passed").length;
+    const complete = Math.floor((passed / total) * planChildren.length);
+    for (let i = 0; i < planChildren.length; i++) {
+      const status = i < complete ? "completed" : i === complete ? "in_process" : "todo";
+      if (status !== planChildren[i].status) {
+        await this.prisma.boardCard.update({ where: { id: planChildren[i].id }, data: { status } });
+      }
+    }
   }
 
   private async syncBoardOnFinish(runId: string, workflow: Workflow): Promise<void> {
@@ -351,6 +395,8 @@ export class RunnerService implements OnModuleDestroy {
         data: { status },
       });
     }
+    await this.syncChildrenProgress(task.id, runId, true);
+    this.gateway.emitBoardChanged();
   }
 
   private async snapshotArtifact(
@@ -448,6 +494,7 @@ export class RunnerService implements OnModuleDestroy {
     try {
       result = await this.runAgent({
         runId,
+        projectId: opts.projectId ?? undefined,
         stageId: "ai",
         title: opts.name,
         agent: opts.agent,
@@ -598,6 +645,82 @@ export class RunnerService implements OnModuleDestroy {
     return map;
   }
 
+  private gitIn(cwd: string) {
+    return (args: string[]) =>
+      new Promise<string>((resolve) => {
+        execFile("git", ["-C", cwd, ...args], { maxBuffer: 16 * 1024 * 1024 }, (err, stdout) =>
+          resolve(err ? "" : stdout),
+        );
+      });
+  }
+
+  async diff(runId: string): Promise<{
+    patch: string;
+    files: { path: string; additions: number; deletions: number }[];
+    branch: string;
+    cwd: string;
+  }> {
+    const run = await this.prisma.run.findUnique({ where: { id: runId }, select: { cwd: true } });
+    const cwd = run?.cwd;
+    if (!cwd) {
+      return { patch: "", files: [], branch: "", cwd: "" };
+    }
+    const git = this.gitIn(cwd);
+    const inside = (await git(["rev-parse", "--is-inside-work-tree"])).trim();
+    if (inside !== "true") {
+      return { patch: "", files: [], branch: "", cwd };
+    }
+    const branch = (await git(["rev-parse", "--abbrev-ref", "HEAD"])).trim();
+    const numstat = await git(["diff", "--numstat"]);
+    const patch = await git(["diff"]);
+    const files = numstat
+      .split("\n")
+      .filter(Boolean)
+      .map((line) => {
+        const [add, del, ...rest] = line.split("\t");
+        return { path: rest.join("\t"), additions: Number(add) || 0, deletions: Number(del) || 0 };
+      });
+    return { patch, files, branch, cwd };
+  }
+
+  async commit(runId: string): Promise<{ committed: boolean; branch: string; sha?: string; message: string }> {
+    const run = await this.prisma.run.findUnique({
+      where: { id: runId },
+      select: { cwd: true, name: true },
+    });
+    const cwd = run?.cwd;
+    if (!cwd) {
+      return { committed: false, branch: "", message: "This run has no working directory." };
+    }
+    if (!cwd.split(/[\\/]/).includes(".worktrees")) {
+      return {
+        committed: false,
+        branch: "",
+        message: "This run ran in the workspace, not an isolated task branch — refusing to commit here.",
+      };
+    }
+    const git = this.gitIn(cwd);
+    if ((await git(["rev-parse", "--is-inside-work-tree"])).trim() !== "true") {
+      return { committed: false, branch: "", message: "Not a git worktree." };
+    }
+    const branch = (await git(["rev-parse", "--abbrev-ref", "HEAD"])).trim();
+    await git(["add", "-A"]);
+    if (!(await git(["status", "--porcelain"])).trim()) {
+      return { committed: false, branch, message: "Nothing to commit." };
+    }
+    await git([
+      "-c",
+      "user.name=VCC Workflow",
+      "-c",
+      "user.email=vcc@local",
+      "commit",
+      "-m",
+      run?.name || "VCC task",
+    ]);
+    const sha = (await git(["rev-parse", "--short", "HEAD"])).trim();
+    return { committed: true, branch, sha, message: `Committed on ${branch} (${sha}).` };
+  }
+
   get(runId: string) {
     return this.prisma.run.findUniqueOrThrow({
       where: { id: runId },
@@ -648,6 +771,7 @@ export class RunnerService implements OnModuleDestroy {
       where: { runId, parentId: null },
       data: { status: "review" },
     });
+    this.gateway.emitBoardChanged();
     await this.emit(runId, {
       level: "error",
       status: "failed",
@@ -709,7 +833,6 @@ export class RunnerService implements OnModuleDestroy {
     const projectId = runRow.projectId;
 
     let budgetUsed = runRow.tokensConsumed;
-    let loopDepth = 0;
 
     const rows = await this.prisma.stage.findMany({
       where: { runId },
@@ -739,6 +862,7 @@ export class RunnerService implements OnModuleDestroy {
       }
 
       const context = this.buildContext(prior);
+      let loopDepth = 0;
       const outcome = await this.runStageWithRetries(
         runId,
         projectId,
@@ -844,6 +968,7 @@ export class RunnerService implements OnModuleDestroy {
       try {
         result = await this.runAgent({
           runId,
+          projectId: projectId ?? undefined,
           stageId: stage.id,
           title: stage.title,
           agent: stage.agent,
@@ -979,6 +1104,7 @@ export class RunnerService implements OnModuleDestroy {
       where: { runId, parentId: null },
       data: { status: "review" },
     });
+    this.gateway.emitBoardChanged();
     await this.emit(runId, {
       level: "error",
       status,

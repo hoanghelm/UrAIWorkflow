@@ -5,7 +5,8 @@ import { AppModule } from "./app.module";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  const origin = process.env.WEB_ORIGIN ?? "http://localhost:5173";
+  const webOrigin = process.env.WEB_ORIGIN ?? "http://localhost:5173";
+  const origin = webOrigin === "*" ? true : webOrigin.split(",").map((o) => o.trim());
   app.enableCors({ origin, credentials: true });
   app.setGlobalPrefix("api");
 

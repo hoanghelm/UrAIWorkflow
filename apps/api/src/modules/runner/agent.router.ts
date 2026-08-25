@@ -17,7 +17,7 @@ export class AgentRouter implements AgentPort {
   ) {}
 
   async runStage(request: StageRequest): Promise<StageResult> {
-    const active = await this.connectors.getActive();
+    const active = await this.connectors.getActiveForProject(request.projectId);
     if (active && active.provider === "claude-agent") {
       return this.subscription.run(request, active);
     }

@@ -1,11 +1,23 @@
-import { WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
-import { Server } from "socket.io";
+import { WebSocketGateway, WebSocketServer, type OnGatewayConnection } from "@nestjs/websockets";
+import { Server, type Socket } from "socket.io";
 import type { RunEvent } from "@vcc-workflow/schema";
+import { isHosted } from "../../common/deployment";
 
 @WebSocketGateway({ cors: { origin: true }, namespace: "/runs" })
-export class RunnerGateway {
+export class RunnerGateway implements OnGatewayConnection {
   @WebSocketServer()
   server!: Server;
+
+  handleConnection(client: Socket): void {
+    if (!isHosted()) {
+      return;
+    }
+    const token = (client.handshake.auth?.token as string | undefined) ?? "";
+    const expected = process.env.HOSTED_ACCESS_TOKEN;
+    if (!expected || token !== expected) {
+      client.disconnect(true);
+    }
+  }
 
   emitEvent(event: RunEvent): void {
     this.server.emit("run.event", event);
@@ -22,5 +34,9 @@ export class RunnerGateway {
 
   emitStarted(meta: { runId: string; name: string; pack: string; projectId?: string }): void {
     this.server.emit("run.started", meta);
+  }
+
+  emitBoardChanged(projectId?: string): void {
+    this.server.emit("board.changed", { projectId });
   }
 }

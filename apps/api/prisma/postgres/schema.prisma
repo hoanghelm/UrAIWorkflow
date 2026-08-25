@@ -1,0 +1,336 @@
+// Generated from ../schema.prisma by gen-postgres-schema.mjs. Do not edit.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Project {
+  id        String   @id
+  name      String
+  root      String   @unique
+  persona   String   @default("generalist")
+  createdAt DateTime @default(now())
+
+  runs         Run[]
+  catalogItems CatalogItem[]
+}
+
+model CatalogItem {
+  id        String  @id
+  kind      String
+  name      String
+  scope     String
+  path      String?
+  trust     String  @default("community")
+  version   String  @default("0.0.0")
+  source    String  @default("discovered")
+  meta      String  @default("{}")
+  projectId String?
+
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([kind])
+  @@index([projectId])
+}
+
+model Pack {
+  id          String   @id
+  name        String
+  version     String
+  description String   @default("")
+  trust       String   @default("community")
+  manifest    String
+  installed   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@unique([name, version])
+}
+
+model Run {
+  id         String   @id
+  projectId  String?
+  cardId     String?
+  cwd        String?
+  kind       String   @default("pipeline")
+  name       String
+  pack       String
+  status     String   @default("pending")
+  breach     String?
+  question   String?
+  workflow   String
+  tokensConsumed Int  @default(0)
+  tokensSaved    Int  @default(0)
+  tokensInput    Int  @default(0)
+  tokensOutput   Int  @default(0)
+  tokensCached   Int  @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  stages        Stage[]
+  events        RunEvent[]
+  checkpoints   Checkpoint[]
+  logs          StageLog[]
+  ledgerEntries LedgerEntry[]
+
+  @@index([projectId])
+  @@index([status])
+}
+
+model Stage {
+  id      String @id @default(cuid())
+  runId   String
+  stageId String
+  title   String @default("")
+  agent   String
+  model   String @default("inherit")
+  status  String @default("pending")
+  attempts Int   @default(0)
+  tokens  Int    @default(0)
+  order   Int
+
+  run Run @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+}
+
+model RunEvent {
+  id          String   @id @default(cuid())
+  runId       String
+  at          DateTime @default(now())
+  level       String   @default("info")
+  stageId     String?
+  status      String?
+  stageStatus String?
+  breach      String?
+  message     String
+
+  run Run @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+}
+
+model Checkpoint {
+  id        String   @id @default(cuid())
+  runId     String
+  stageId   String
+  state     String
+  createdAt DateTime @default(now())
+
+  run Run @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+}
+
+model StageLog {
+  id        String   @id @default(cuid())
+  runId     String
+  stageId   String
+  text      String
+  trace     String   @default("")
+  tokens    Int      @default(0)
+  createdAt DateTime @default(now())
+
+  run Run @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, stageId])
+  @@index([runId])
+}
+
+model BoardCard {
+  id          String   @id
+  projectId   String
+  title       String
+  requirement String   @default("")
+  type        String   @default("task")
+  parentId    String?
+  pack        String   @default("eng-loop")
+  model       String   @default("sonnet")
+  maxLoops    Int      @default(8)
+  status      String   @default("todo")
+  review      String   @default("none")
+  runId       String?
+  worktree    String?
+  artifacts   String   @default("[]")
+  links       String   @default("[]")
+  labels      String   @default("[]")
+  sprintId    String?
+  assignee    String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  comments    BoardComment[]
+
+  @@index([projectId])
+  @@index([parentId])
+}
+
+model Artifact {
+  id        String   @id @default(cuid())
+  runId     String?
+  projectId String?
+  cardId    String?
+  build     Int      @default(1)
+  name      String
+  path      String
+  files     String   @default("[]")
+  sizeBytes Int      @default(0)
+  fileCount Int      @default(0)
+  preview   String   @default("{}")
+  createdAt DateTime @default(now())
+
+  @@index([cardId])
+  @@index([runId])
+}
+
+model BoardComment {
+  id        String   @id @default(cuid())
+  cardId    String
+  author    String   @default("human")
+  kind      String   @default("comment")
+  body      String   @default("")
+  createdAt DateTime @default(now())
+
+  card BoardCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+
+  @@index([cardId])
+}
+
+model Sprint {
+  id        String   @id @default(cuid())
+  projectId String
+  name      String
+  createdAt DateTime @default(now())
+
+  @@index([projectId])
+}
+
+model BoardAutomation {
+  id        String   @id @default(cuid())
+  projectId String
+  trigger   String
+  action    String
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@index([projectId])
+}
+
+model Trigger {
+  id          String    @id
+  name        String
+  projectId   String
+  pack        String
+  type        String    @default("manual")
+  intervalSec Int       @default(3600)
+  enabled     Boolean   @default(true)
+  lastRunAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([projectId])
+}
+
+model Connector {
+  id        String   @id
+  name      String
+  provider  String
+  apiKey    String
+  baseUrl   String?
+  models    String
+  active    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([active])
+}
+
+model LedgerEntry {
+  id           String @id @default(cuid())
+  runId        String
+  stageId      String
+  lever        String
+  tokensBefore Int
+  tokensAfter  Int
+  saved        Int
+
+  run Run @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@index([runId])
+}
+
+model WorkspaceConnector {
+  projectId   String   @id
+  connectorId String
+  updatedAt   DateTime @updatedAt
+}
+
+model ProjectPack {
+  id               String   @id @default(cuid())
+  projectId        String
+  packName         String
+  installedVersion String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([projectId, packName])
+  @@index([projectId])
+}
+
+model UsageStat {
+  id          String   @id @default(cuid())
+  projectId   String?
+  blockKind   String
+  blockName   String
+  invocations Int      @default(0)
+  lastUsedAt  DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([projectId, blockKind, blockName])
+  @@index([projectId])
+}
+
+model Design {
+  id          String   @id @default(cuid())
+  projectId   String
+  name        String
+  description String   @default("")
+  createdAt   DateTime @default(now())
+
+  artifacts DesignArtifact[]
+
+  @@index([projectId])
+}
+
+model DesignArtifact {
+  id        String   @id @default(cuid())
+  designId  String
+  kind      String   @default("mockup")
+  title     String
+  format    String   @default("html")
+  content   String   @default("")
+  version   Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  design   Design          @relation(fields: [designId], references: [id], onDelete: Cascade)
+  versions DesignVersion[]
+
+  @@index([designId])
+}
+
+model DesignVersion {
+  id         String   @id @default(cuid())
+  artifactId String
+  build      Int
+  content    String   @default("")
+  createdAt  DateTime @default(now())
+
+  artifact DesignArtifact @relation(fields: [artifactId], references: [id], onDelete: Cascade)
+
+  @@index([artifactId])
+}

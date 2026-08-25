@@ -43,7 +43,7 @@ export function UsageWidget() {
     <>
       <button
         onClick={openPanel}
-        className="flex items-center gap-1.5 px-2 hover:bg-black/10 dark:hover:bg-white/10"
+        className="flex h-full items-center gap-1.5 px-2.5 transition-colors hover:bg-white/15"
       >
         <FundOutlined />
         <span>Usage</span>

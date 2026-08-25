@@ -64,7 +64,7 @@ export function FigmaModal({
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Name this task, or leave blank"
+            placeholder="Task name (optional)"
           />
         </div>
         <div>

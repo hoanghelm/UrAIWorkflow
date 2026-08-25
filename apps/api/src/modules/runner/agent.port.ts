@@ -1,5 +1,6 @@
 export interface StageRequest {
   runId: string;
+  projectId?: string;
   stageId: string;
   title: string;
   agent: string;

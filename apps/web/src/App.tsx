@@ -21,6 +21,7 @@ import {
   ClockCircleOutlined,
   ProjectOutlined,
   FileZipOutlined,
+  ExperimentOutlined,
   type NavItem,
 } from "@/components/ui";
 import { ProjectSwitcher } from "@/features/projects/ProjectSwitcher";
@@ -33,10 +34,14 @@ import { Breadcrumbs } from "@/features/nav/Breadcrumbs";
 import { ProjectDetailPage } from "@/features/projects/ProjectDetailPage";
 import { PackDetailPage } from "@/features/packs/PackDetailPage";
 import { DiagramsPage } from "@/features/diagrams/DiagramsPage";
+import { DesignGalleryPage } from "@/features/design/DesignGalleryPage";
+import { DesignDetailPage } from "@/features/design/DesignDetailPage";
+import { DesignToolPage } from "@/features/design/DesignToolPage";
+import { TestToolPage } from "@/features/tests/TestToolPage";
 import { TriggersPage } from "@/features/triggers/TriggersPage";
-import { BoardPage } from "@/features/board/BoardPage";
 import { ArtifactsPage } from "@/features/artifacts/ArtifactsPage";
 import { ActiveConnectorBadge } from "@/features/connectors/ActiveConnectorBadge";
+import { ServerSwitcher } from "@/features/servers/ServerSwitcher";
 import { PacksPage } from "@/features/packs/PacksPage";
 import { CatalogPage } from "@/features/catalog/CatalogPage";
 import { RunsPage } from "@/features/runs/RunsPage";
@@ -45,6 +50,8 @@ import { WorkflowBuilderPage } from "@/features/workflow/WorkflowBuilderPage";
 import { ConnectorsPage } from "@/features/connectors/ConnectorsPage";
 import { TokensPage } from "@/features/dashboard/TokensPage";
 import { StatsPage } from "@/features/stats/StatsPage";
+import { BoardPage } from "@/features/board/BoardPage";
+import { RepoReviewPage } from "@/features/repo/RepoReviewPage";
 import { ActivityProvider } from "@/lib/activity/ActivityProvider";
 import { ActivityBar } from "@/features/activity/ActivityBar";
 import { AiBuilderFab } from "@/features/ai/AiBuilderFab";
@@ -70,7 +77,31 @@ const NAV: NavItem[] = [
   },
   { key: "/packs", label: "Packs", icon: <AppstoreOutlined /> },
   { key: "/build", label: "Build", icon: <PartitionOutlined /> },
-  { key: "/diagrams", label: "Diagrams", icon: <DeploymentUnitOutlined /> },
+  {
+    key: "design",
+    label: "Design",
+    icon: <DeploymentUnitOutlined />,
+    children: [
+      { key: "/design", label: "My designs", icon: <AppstoreOutlined /> },
+      { key: "/design/tool/mockup", label: "Mockup", icon: <BuildOutlined /> },
+      { key: "/design/tool/wireframe", label: "Wireframe", icon: <ProfileOutlined /> },
+      { key: "/design/tool/flow", label: "User flow", icon: <PartitionOutlined /> },
+      { key: "/design/tool/design-system", label: "Design system", icon: <BlockOutlined /> },
+      { key: "/design/diagrams", label: "Diagrams", icon: <DeploymentUnitOutlined /> },
+    ],
+  },
+  {
+    key: "tests",
+    label: "Tests",
+    icon: <ExperimentOutlined />,
+    children: [
+      { key: "/tests/unit", label: "Unit tests", icon: <CodeOutlined /> },
+      { key: "/tests/integration", label: "Integration", icon: <PartitionOutlined /> },
+      { key: "/tests/e2e", label: "E2E / automation", icon: <ThunderboltOutlined /> },
+      { key: "/tests/api", label: "API tests", icon: <ApiOutlined /> },
+      { key: "/tests/test-plan", label: "Test plan", icon: <ProfileOutlined /> },
+    ],
+  },
   { key: "/runs", label: "Runs", icon: <ThunderboltOutlined /> },
   { key: "/artifacts", label: "Artifacts", icon: <FileZipOutlined /> },
   { key: "/triggers", label: "Triggers", icon: <ClockCircleOutlined /> },
@@ -107,6 +138,7 @@ function DashboardApp() {
       breadcrumb={<Breadcrumbs />}
       toolbar={
         <Space size="middle">
+          <ServerSwitcher />
           <ActiveConnectorBadge />
           <ProjectSwitcher />
         </Space>
@@ -123,7 +155,12 @@ function DashboardApp() {
         <Route path="/packs" element={<PacksPage />} />
         <Route path="/packs/:name" element={<PackDetailPage />} />
         <Route path="/build" element={<WorkflowBuilderPage />} />
-        <Route path="/diagrams" element={<DiagramsPage />} />
+        <Route path="/design" element={<DesignGalleryPage />} />
+        <Route path="/design/diagrams" element={<DiagramsPage />} />
+        <Route path="/design/tool/:kind" element={<DesignToolPage />} />
+        <Route path="/design/:id" element={<DesignDetailPage />} />
+        <Route path="/tests/:kind" element={<TestToolPage />} />
+        <Route path="/diagrams" element={<Navigate to="/design/diagrams" replace />} />
         <Route path="/runs" element={<RunsPage />} />
         <Route path="/runs/:id" element={<RunDetailPage />} />
         <Route path="/artifacts" element={<ArtifactsPage />} />
@@ -145,6 +182,7 @@ function DashboardApp() {
 export function App() {
   return (
     <Routes>
+      <Route path="/repo/:runId" element={<RepoReviewPage />} />
       <Route path="/*" element={<DashboardApp />} />
     </Routes>
   );

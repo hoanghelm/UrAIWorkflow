@@ -6,6 +6,7 @@ export const boardStatusSchema = z.enum([
   "review",
   "completed",
   "closed",
+  "cancelled",
 ]);
 export type BoardStatus = z.infer<typeof boardStatusSchema>;
 
@@ -28,8 +29,16 @@ export const createBoardCardInputSchema = z.object({
   pack: z.string().default("eng-loop"),
   model: z.enum(["opus", "sonnet", "haiku"]).default("sonnet"),
   maxLoops: z.number().int().min(1).max(50).default(8),
+  labels: z.array(z.string()).default([]),
+  sprintId: z.string().optional(),
+  assignee: z.string().optional(),
 });
 export type CreateBoardCardInput = z.infer<typeof createBoardCardInputSchema>;
+
+export const updateBoardLabelsInputSchema = z.object({
+  labels: z.array(z.string()).default([]),
+});
+export type UpdateBoardLabelsInput = z.infer<typeof updateBoardLabelsInputSchema>;
 
 export const moveBoardCardInputSchema = z.object({
   status: boardStatusSchema,
@@ -56,9 +65,46 @@ export const boardCardSchema = z.object({
   worktree: z.string().nullable(),
   artifacts: z.array(artifactSchema),
   links: z.array(z.string()),
+  labels: z.array(z.string()).default([]),
+  sprintId: z.string().nullable().default(null),
+  assignee: z.string().nullable().default(null),
   order: z.number().int(),
 });
 export type BoardCard = z.infer<typeof boardCardSchema>;
+
+export const updateBoardAssigneeInputSchema = z.object({
+  assignee: z.string().min(1).nullable(),
+});
+export type UpdateBoardAssigneeInput = z.infer<typeof updateBoardAssigneeInputSchema>;
+
+export const sprintSchema = z.object({
+  id: z.string(),
+  projectId: z.string(),
+  name: z.string(),
+});
+export type Sprint = z.infer<typeof sprintSchema>;
+
+export const createSprintInputSchema = z.object({
+  projectId: z.string().min(1),
+  name: z.string().min(1),
+});
+export type CreateSprintInput = z.infer<typeof createSprintInputSchema>;
+
+export const boardAutomationSchema = z.object({
+  id: z.string(),
+  projectId: z.string(),
+  trigger: z.string(),
+  action: z.string(),
+  enabled: z.boolean(),
+});
+export type BoardAutomation = z.infer<typeof boardAutomationSchema>;
+
+export const createBoardAutomationInputSchema = z.object({
+  projectId: z.string().min(1),
+  trigger: z.string().min(1),
+  action: z.string().min(1),
+});
+export type CreateBoardAutomationInput = z.infer<typeof createBoardAutomationInputSchema>;
 
 export const commentAuthorSchema = z.enum(["human", "ai"]);
 export type CommentAuthor = z.infer<typeof commentAuthorSchema>;

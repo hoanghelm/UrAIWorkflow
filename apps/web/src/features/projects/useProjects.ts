@@ -20,7 +20,9 @@ export function useProjects() {
 
   const remove = (id: string) => dispatch.projects.remove(id);
 
-  return { list, currentId, select, register, setPersona, remove };
+  const reload = () => dispatch.projects.load();
+
+  return { list, currentId, select, register, setPersona, remove, reload };
 }
 
 export function useWorkspacePersona(): string {

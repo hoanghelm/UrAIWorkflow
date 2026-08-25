@@ -22,6 +22,11 @@ export class CatalogController {
     return this.catalog.registerProject(body.name, body.root, body.persona);
   }
 
+  @Post("projects/clone")
+  clone(@Body() body: { name: string; gitUrl: string; persona?: string }) {
+    return this.catalog.cloneProject(body.name, body.gitUrl, body.persona);
+  }
+
   @Patch("projects/:id/persona")
   setPersona(@Param("id") id: string, @Body() body: { persona: string }) {
     return this.catalog.setPersona(id, body.persona);

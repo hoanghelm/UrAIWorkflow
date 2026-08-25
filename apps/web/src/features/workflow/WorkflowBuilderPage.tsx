@@ -121,7 +121,7 @@ function StepPanel({
               rows={3}
               value={selected.instruction}
               disabled={readOnly}
-              placeholder="e.g. Read the sales spreadsheet and list the top 10 customers"
+              placeholder="What should this workflow do?"
               onChange={(e) => update({ instruction: e.target.value })}
             />
           </Field>

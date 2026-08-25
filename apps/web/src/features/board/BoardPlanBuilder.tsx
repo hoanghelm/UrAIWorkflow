@@ -54,6 +54,7 @@ export function BoardPlanBuilder({
           pack: "eng-loop",
           model: "sonnet",
           maxLoops: 8,
+          labels: [],
         });
       }
       notify.success(`Created ${items.length} task${items.length === 1 ? "" : "s"} on the board`);

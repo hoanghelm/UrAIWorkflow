@@ -47,6 +47,51 @@ export class BoardController {
     return this.board.move(id, body.status, body.order);
   }
 
+  @Patch(":id/labels")
+  setLabels(@Param("id") id: string, @Body() body: { labels: string[] }) {
+    return this.board.setLabels(id, body.labels ?? []);
+  }
+
+  @Patch(":id/assignee")
+  setAssignee(@Param("id") id: string, @Body() body: { assignee: string | null }) {
+    return this.board.setAssignee(id, body.assignee ?? null);
+  }
+
+  @Patch(":id")
+  update(@Param("id") id: string, @Body() body: { title?: string; requirement?: string }) {
+    return this.board.updateCard(id, body);
+  }
+
+  @Get("sprints")
+  sprints(@Query("projectId") projectId: string) {
+    return this.board.sprints(projectId);
+  }
+
+  @Post("sprints")
+  createSprint(@Body() body: { projectId: string; name: string }) {
+    return this.board.createSprint(body);
+  }
+
+  @Get("automations")
+  automations(@Query("projectId") projectId: string) {
+    return this.board.automations(projectId);
+  }
+
+  @Post("automations")
+  createAutomation(@Body() body: { projectId: string; trigger: string; action: string }) {
+    return this.board.createAutomation(body);
+  }
+
+  @Patch("automations/:id")
+  toggleAutomation(@Param("id") id: string, @Body() body: { enabled: boolean }) {
+    return this.board.toggleAutomation(id, body.enabled);
+  }
+
+  @Delete("automations/:id")
+  removeAutomation(@Param("id") id: string) {
+    return this.board.removeAutomation(id);
+  }
+
   @Get(":id/runs")
   runs(@Param("id") id: string) {
     return this.board.runsForCard(id);

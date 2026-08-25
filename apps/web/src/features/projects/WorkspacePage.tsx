@@ -22,6 +22,7 @@ import {
   ThunderboltOutlined,
 } from "@/components/ui";
 import { useProjectSummariesQuery, useAllRunsQuery, usePersonasQuery } from "@/lib/queries";
+import { api } from "@/lib/api";
 import { useProjects } from "./useProjects";
 
 const KIND_ORDER = ["agent", "skill", "command", "rule", "mcp", "plugin"];
@@ -49,7 +50,7 @@ function CountChips({ counts }: { counts: Record<string, number> }) {
 export function WorkspacePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { currentId, select, register, remove } = useProjects();
+  const { currentId, select, register, remove, reload } = useProjects();
 
   const onDelete = async (id: string) => {
     await remove(id);
@@ -65,16 +66,42 @@ export function WorkspacePage() {
   const [name, setName] = useState("");
   const [root, setRoot] = useState("");
   const [role, setRole] = useState("generalist");
+  const [source, setSource] = useState<"path" | "git">("path");
+  const [gitUrl, setGitUrl] = useState("");
+  const [busy, setBusy] = useState(false);
 
   const onRegister = async () => {
-    if (!name || !root) {
-      notify.error("Name and root are required");
+    if (!name.trim()) {
+      notify.error("Name is required");
       return;
     }
-    await register(name, root, role);
+    setBusy(true);
+    try {
+      if (source === "git") {
+        if (!gitUrl.trim()) {
+          notify.error("Git URL is required");
+          return;
+        }
+        await api.cloneProject(name.trim(), gitUrl.trim(), role);
+        await reload();
+      } else {
+        if (!root.trim()) {
+          notify.error("Path is required");
+          return;
+        }
+        await register(name.trim(), root.trim(), role);
+      }
+    } catch (e) {
+      notify.error("Could not add workspace", e instanceof Error ? e.message : undefined);
+      return;
+    } finally {
+      setBusy(false);
+    }
     setOpen(false);
     setName("");
     setRoot("");
+    setGitUrl("");
+    setSource("path");
     setRole("generalist");
     void queryClient.invalidateQueries({ queryKey: ["project-summaries"] });
     notify.success("Workspace added");
@@ -208,14 +235,38 @@ export function WorkspacePage() {
         onOk={onRegister}
         onCancel={() => setOpen(false)}
         okText="Add"
+        confirmLoading={busy}
       >
         <div className="flex flex-col gap-3 py-2">
           <Input placeholder="Workspace name" value={name} onChange={(e) => setName(e.target.value)} />
-          <Input
-            placeholder="Absolute path to repo root (e.g. D:/tools/VCC-Workflow)"
-            value={root}
-            onChange={(e) => setRoot(e.target.value)}
+          <Select
+            value={source}
+            onChange={(v) => setSource(v as "path" | "git")}
+            className="w-full"
+            options={[
+              { value: "path", label: "Existing folder on the server" },
+              { value: "git", label: "Clone a git repo onto the server" },
+            ]}
           />
+          {source === "path" ? (
+            <Input
+              placeholder="Absolute path to the folder"
+              value={root}
+              onChange={(e) => setRoot(e.target.value)}
+            />
+          ) : (
+            <>
+              <Input
+                placeholder="https://github.com/you/repo.git"
+                value={gitUrl}
+                onChange={(e) => setGitUrl(e.target.value)}
+              />
+              <div className="-mt-1 text-xs text-faint">
+                Cloned into the active server's workspaces dir (WORKSPACES_ROOT). Private repos need the URL's
+                credentials or the server's git auth.
+              </div>
+            </>
+          )}
           <div>
             <div className="mb-1 text-xs uppercase text-faint">Role for this workspace</div>
             <Select

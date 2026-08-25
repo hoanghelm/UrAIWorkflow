@@ -93,6 +93,57 @@ export class PacksService implements OnModuleInit {
     return packManifestSchema.parse(JSON.parse(latest.manifest));
   }
 
+  private async latestVersion(name: string): Promise<string> {
+    const rows = await this.prisma.pack.findMany({ where: { name }, select: { version: true } });
+    if (rows.length === 0) {
+      throw new NotFoundException(`Pack "${name}" not found`);
+    }
+    return [...rows].sort((a, b) => compareSemver(b.version, a.version))[0].version;
+  }
+
+  async listForProject(projectId: string): Promise<
+    Array<PackSummary & { installedVersion: string | null; latestVersion: string; updateAvailable: boolean }>
+  > {
+    const rows = await this.prisma.pack.findMany({ orderBy: { name: "asc" } });
+    const pins = await this.prisma.projectPack.findMany({ where: { projectId } });
+    const pinBy = new Map(pins.map((p) => [p.packName, p.installedVersion]));
+    const latestBy = new Map<string, { version: string; row: (typeof rows)[number] }>();
+    for (const row of rows) {
+      const cur = latestBy.get(row.name);
+      if (!cur || compareSemver(row.version, cur.version) > 0) {
+        latestBy.set(row.name, { version: row.version, row });
+      }
+    }
+    return [...latestBy.values()].map(({ version, row }) => {
+      const installedVersion = pinBy.get(row.name) ?? null;
+      return {
+        ...this.toSummary(row),
+        installed: installedVersion !== null,
+        installedVersion,
+        latestVersion: version,
+        updateAvailable: installedVersion !== null && compareSemver(version, installedVersion) > 0,
+      };
+    });
+  }
+
+  async installForProject(
+    projectId: string,
+    packName: string,
+  ): Promise<{ packName: string; installedVersion: string }> {
+    const installedVersion = await this.latestVersion(packName);
+    await this.prisma.projectPack.upsert({
+      where: { projectId_packName: { projectId, packName } },
+      create: { projectId, packName, installedVersion },
+      update: { installedVersion },
+    });
+    return { packName, installedVersion };
+  }
+
+  async uninstallForProject(projectId: string, packName: string): Promise<{ packName: string }> {
+    await this.prisma.projectPack.deleteMany({ where: { projectId, packName } });
+    return { packName };
+  }
+
   async setInstalled(id: string, installed: boolean): Promise<PackSummary> {
     const row = await this.prisma.pack.update({
       where: { id },

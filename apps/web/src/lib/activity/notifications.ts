@@ -5,6 +5,7 @@ export interface AppNotification {
   level: NotifLevel;
   title: string;
   description?: string;
+  runId?: string;
   at: number;
   toast: boolean;
   read: boolean;
@@ -22,12 +23,13 @@ const subs = new Set<() => void>();
 const emit = () => subs.forEach((fn) => fn());
 const nextId = () => `n-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
-function push(input: { level: NotifLevel; title: string; description?: string }): string {
+function push(input: { level: NotifLevel; title: string; description?: string; runId?: string }): string {
   const item: AppNotification = {
     id: nextId(),
     level: input.level,
     title: input.title,
     description: input.description,
+    runId: input.runId,
     at: Date.now(),
     toast: true,
     read: false,
