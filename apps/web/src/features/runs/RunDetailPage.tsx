@@ -65,10 +65,6 @@ export function RunDetailPage() {
     }
   }, [runningStageId]);
 
-  if (!run) {
-    return null;
-  }
-
   const artifacts = runArts?.artifacts ?? [];
   const buildRun = async () => {
     if (!cardId) {
@@ -96,7 +92,7 @@ export function RunDetailPage() {
   };
 
   const pstatus = prev?.status ?? "idle";
-  const hasDeploy = run.status === "done" && Boolean(cardId) && artifacts.length > 0;
+  const hasDeploy = run?.status === "done" && Boolean(cardId) && artifacts.length > 0;
   const mkStage = (sid: string, title: string, status: string) => ({
     id: sid,
     stageId: sid,
@@ -149,6 +145,10 @@ export function RunDetailPage() {
   useEffect(() => tail(outputRef.current), [output]);
   useEffect(() => tail(traceRef.current), [traceLines.length, showTrace]);
   const st = shownStage ? STAGE_STATE[shownStage.status] ?? STAGE_STATE.pending : STAGE_STATE.pending;
+
+  if (!run) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-4">
