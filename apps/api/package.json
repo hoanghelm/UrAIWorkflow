@@ -10,6 +10,7 @@
     "test": "tsx --test src/**/*.spec.ts",
     "test:e2e": "tsx --test test/**/*.e2e-spec.ts",
     "lint": "eslint \"src/**/*.ts\"",
+    "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
     "prisma:migrate": "prisma migrate deploy",
