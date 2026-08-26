@@ -35,6 +35,7 @@
     "@nestjs/websockets": "^10.4.4",
     "@prisma/client": "^5.20.0",
     "@vcc-workflow/schema": "workspace:*",
+    "adm-zip": "^0.6.0",
     "chokidar": "^3.6.0",
     "dependency-cruiser": "^18.1.1",
     "nanoid": "^3.3.7",
@@ -47,6 +48,7 @@
   "devDependencies": {
     "@nestjs/cli": "^10.4.5",
     "@nestjs/schematics": "^10.1.4",
+    "@types/adm-zip": "^0.5.8",
     "@types/express": "^5.0.0",
     "@types/node": "^20.16.11",
     "@types/tar": "^7.0.87",

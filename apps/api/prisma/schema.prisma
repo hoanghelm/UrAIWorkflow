@@ -49,6 +49,21 @@ model Pack {
   @@unique([name, version])
 }
 
+model Bundle {
+  id          String @id
+  kind        String
+  name        String
+  description String @default("")
+  author      String @default("")
+  tags        String @default("[]")
+  stars       Int    @default(0)
+  source      String @default("")
+  archive     String @default("")
+  meta        String @default("{}")
+
+  @@index([kind])
+}
+
 model Run {
   id         String   @id
   projectId  String?

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -20,6 +20,7 @@ import {
   HistoryOutlined,
   ProjectOutlined,
   ThunderboltOutlined,
+  SaveOutlined,
 } from "@/components/ui";
 import type { DesignArtifact, DesignKind } from "@vcc-workflow/schema";
 import { api } from "@/lib/api";
@@ -28,6 +29,11 @@ import { useWorkspacePersona } from "@/features/projects/useProjects";
 import { useRegisterAiBuilder } from "@/lib/activity/hooks";
 import { KIND_META, CREATABLE } from "./designMeta";
 import { DesignWorkflowPanel } from "./DesignWorkflowPanel";
+import type { GrapesEditorHandle } from "@/components/ui/GrapesEditor";
+
+const GrapesEditor = lazy(() =>
+  import("@/components/ui/GrapesEditor").then((m) => ({ default: m.GrapesEditor })),
+);
 
 type DiffLine = { type: "same" | "add" | "del"; text: string };
 
@@ -114,6 +120,8 @@ export function DesignDetailPage() {
   const [renameTarget, setRenameTarget] = useState<"design" | "artifact" | null>(null);
   const [renameText, setRenameText] = useState("");
   const [sending, setSending] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const editorRef = useRef<GrapesEditorHandle>(null);
 
   const { data: design } = useQuery({
     queryKey: ["design", id],
@@ -276,6 +284,19 @@ export function DesignDetailPage() {
     }
   };
 
+  const saveEdit = async () => {
+    if (!selected || !editorRef.current) return;
+    setSavingEdit(true);
+    try {
+      const content = editorRef.current.getHtml();
+      const updated = await api.updateDesignArtifact(selected.id, { content });
+      patchArtifact(updated);
+      notify.success("Saved", `Now v${updated.version}.`);
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
   const meta = selected ? KIND_META[selected.kind] : null;
   const compareVersion = versions.find((v) => v.id === compareId) ?? null;
 
@@ -353,6 +374,17 @@ export function DesignDetailPage() {
                   </span>
                 </span>
                 <span className="ml-auto flex flex-wrap items-center gap-2">
+                  {selected.format === "html" && selected.content && (
+                    <Button
+                      size="small"
+                      type="primary"
+                      icon={<SaveOutlined />}
+                      loading={savingEdit}
+                      onClick={saveEdit}
+                    >
+                      Save
+                    </Button>
+                  )}
                   <Button size="small" onClick={() => openRename("artifact")}>
                     Rename
                   </Button>
@@ -396,12 +428,19 @@ export function DesignDetailPage() {
                   </div>
                 ) : selected.content ? (
                   selected.format === "html" ? (
-                    <iframe
-                      title={selected.title}
-                      srcDoc={selected.content}
-                      sandbox="allow-scripts allow-forms"
-                      style={{ width: "100%", height: "100%", border: "none", background: "#fff" }}
-                    />
+                    <Suspense
+                      fallback={
+                        <div className="flex h-full items-center justify-center">
+                          <Spin />
+                        </div>
+                      }
+                    >
+                      <GrapesEditor
+                        key={`${selected.id}:${selected.version}`}
+                        ref={editorRef}
+                        html={selected.content}
+                      />
+                    </Suspense>
                   ) : (
                     <div className="h-full overflow-auto p-4">
                       <Mermaid code={selected.content} />

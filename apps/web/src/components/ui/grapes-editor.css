@@ -1,0 +1,136 @@
+.ge-root {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  background: #0d0d11;
+  color: #c9c9d2;
+}
+
+.ge-blocks {
+  width: 236px;
+  flex: none;
+  overflow-y: auto;
+  border-right: 1px solid #23232b;
+  background: #0e0e13;
+}
+
+.ge-canvas {
+  flex: 1;
+  min-width: 0;
+  background: #0d0d11;
+}
+
+.ge-side {
+  width: 264px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #23232b;
+  background: #0e0e13;
+}
+
+.ge-tabs {
+  display: flex;
+  border-bottom: 1px solid #23232b;
+}
+
+.ge-tab {
+  flex: 1;
+  padding: 9px 6px;
+  background: #131319;
+  color: #8f8fa0;
+  border: 0;
+  border-right: 1px solid #23232b;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ge-tab:last-child {
+  border-right: 0;
+}
+
+.ge-tab.active {
+  background: #0d0d11;
+  color: #fff;
+  box-shadow: inset 0 -2px 0 #3b6cff;
+}
+
+.ge-panels {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.ge-panel {
+  display: none;
+}
+
+.ge-panel.active {
+  display: block;
+}
+
+/* black theme overrides for GrapesJS */
+.ge-root .gjs-one-bg {
+  background-color: #0e0e13;
+}
+.ge-root .gjs-two-color {
+  color: #c9c9d2;
+}
+.ge-root .gjs-two-bg {
+  background-color: #17171e;
+}
+.ge-root .gjs-three-bg {
+  background-color: #3b6cff;
+  color: #fff;
+}
+.ge-root .gjs-four-color,
+.ge-root .gjs-four-color-h:hover {
+  color: #3b6cff;
+}
+.ge-root .gjs-blocks-c {
+  padding: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.ge-root .gjs-block {
+  width: auto;
+  min-height: 66px;
+  margin: 0;
+  padding: 10px 6px;
+  background: #17171e;
+  border: 1px solid #26262f;
+  border-radius: 8px;
+  color: #c9c9d2;
+  box-shadow: none;
+}
+.ge-root .gjs-block:hover {
+  color: #fff;
+  border-color: #3b6cff;
+}
+.ge-root .gjs-block-label {
+  color: inherit;
+  font-size: 11px;
+}
+.ge-root .gjs-title,
+.ge-root .gjs-category-title,
+.ge-root .gjs-layer-title,
+.ge-root .gjs-sm-sector-title,
+.ge-root .gjs-trt-header {
+  background: #131319;
+  color: #c9c9d2;
+  border-color: #23232b;
+}
+.ge-root .gjs-field,
+.ge-root .gjs-sm-field input,
+.ge-root .gjs-clm-select select {
+  background: #0d0d11;
+  color: #e6e6ee;
+  border: 1px solid #26262f;
+}
+.ge-root .gjs-sm-sector,
+.ge-root .gjs-trt-trait,
+.ge-root .gjs-layer {
+  border-color: #23232b;
+}

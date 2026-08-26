@@ -1,17 +1,15 @@
 -- CreateTable
 CREATE TABLE "Project" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
     "root" TEXT NOT NULL,
     "persona" TEXT NOT NULL DEFAULT 'generalist',
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "Project_pkey" PRIMARY KEY ("id")
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
 CREATE TABLE "CatalogItem" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
     "kind" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "scope" TEXT NOT NULL,
@@ -21,27 +19,24 @@ CREATE TABLE "CatalogItem" (
     "source" TEXT NOT NULL DEFAULT 'discovered',
     "meta" TEXT NOT NULL DEFAULT '{}',
     "projectId" TEXT,
-
-    CONSTRAINT "CatalogItem_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "CatalogItem_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "Pack" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
     "version" TEXT NOT NULL,
     "description" TEXT NOT NULL DEFAULT '',
     "trust" TEXT NOT NULL DEFAULT 'community',
     "manifest" TEXT NOT NULL,
     "installed" BOOLEAN NOT NULL DEFAULT false,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "Pack_pkey" PRIMARY KEY ("id")
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
 CREATE TABLE "Bundle" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
     "kind" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL DEFAULT '',
@@ -50,14 +45,12 @@ CREATE TABLE "Bundle" (
     "stars" INTEGER NOT NULL DEFAULT 0,
     "source" TEXT NOT NULL DEFAULT '',
     "archive" TEXT NOT NULL DEFAULT '',
-    "meta" TEXT NOT NULL DEFAULT '{}',
-
-    CONSTRAINT "Bundle_pkey" PRIMARY KEY ("id")
+    "meta" TEXT NOT NULL DEFAULT '{}'
 );
 
 -- CreateTable
 CREATE TABLE "Run" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
     "projectId" TEXT,
     "cardId" TEXT,
     "cwd" TEXT,
@@ -73,15 +66,14 @@ CREATE TABLE "Run" (
     "tokensInput" INTEGER NOT NULL DEFAULT 0,
     "tokensOutput" INTEGER NOT NULL DEFAULT 0,
     "tokensCached" INTEGER NOT NULL DEFAULT 0,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Run_pkey" PRIMARY KEY ("id")
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "Run_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "Stage" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
     "runId" TEXT NOT NULL,
     "stageId" TEXT NOT NULL,
     "title" TEXT NOT NULL DEFAULT '',
@@ -91,52 +83,48 @@ CREATE TABLE "Stage" (
     "attempts" INTEGER NOT NULL DEFAULT 0,
     "tokens" INTEGER NOT NULL DEFAULT 0,
     "order" INTEGER NOT NULL,
-
-    CONSTRAINT "Stage_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Stage_runId_fkey" FOREIGN KEY ("runId") REFERENCES "Run" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "RunEvent" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
     "runId" TEXT NOT NULL,
-    "at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "level" TEXT NOT NULL DEFAULT 'info',
     "stageId" TEXT,
     "status" TEXT,
     "stageStatus" TEXT,
     "breach" TEXT,
     "message" TEXT NOT NULL,
-
-    CONSTRAINT "RunEvent_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "RunEvent_runId_fkey" FOREIGN KEY ("runId") REFERENCES "Run" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "Checkpoint" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
     "runId" TEXT NOT NULL,
     "stageId" TEXT NOT NULL,
     "state" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "Checkpoint_pkey" PRIMARY KEY ("id")
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "Checkpoint_runId_fkey" FOREIGN KEY ("runId") REFERENCES "Run" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "StageLog" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
     "runId" TEXT NOT NULL,
     "stageId" TEXT NOT NULL,
     "text" TEXT NOT NULL,
     "trace" TEXT NOT NULL DEFAULT '',
     "tokens" INTEGER NOT NULL DEFAULT 0,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "StageLog_pkey" PRIMARY KEY ("id")
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "StageLog_runId_fkey" FOREIGN KEY ("runId") REFERENCES "Run" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "BoardCard" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
     "projectId" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "requirement" TEXT NOT NULL DEFAULT '',
@@ -155,14 +143,12 @@ CREATE TABLE "BoardCard" (
     "sprintId" TEXT,
     "assignee" TEXT,
     "order" INTEGER NOT NULL DEFAULT 0,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "BoardCard_pkey" PRIMARY KEY ("id")
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
 CREATE TABLE "Artifact" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
     "runId" TEXT,
     "projectId" TEXT,
     "cardId" TEXT,
@@ -173,156 +159,134 @@ CREATE TABLE "Artifact" (
     "sizeBytes" INTEGER NOT NULL DEFAULT 0,
     "fileCount" INTEGER NOT NULL DEFAULT 0,
     "preview" TEXT NOT NULL DEFAULT '{}',
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "Artifact_pkey" PRIMARY KEY ("id")
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
 CREATE TABLE "BoardComment" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
     "cardId" TEXT NOT NULL,
     "author" TEXT NOT NULL DEFAULT 'human',
     "kind" TEXT NOT NULL DEFAULT 'comment',
     "body" TEXT NOT NULL DEFAULT '',
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "BoardComment_pkey" PRIMARY KEY ("id")
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "BoardComment_cardId_fkey" FOREIGN KEY ("cardId") REFERENCES "BoardCard" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "Sprint" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
     "projectId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "Sprint_pkey" PRIMARY KEY ("id")
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
 CREATE TABLE "BoardAutomation" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
     "projectId" TEXT NOT NULL,
     "trigger" TEXT NOT NULL,
     "action" TEXT NOT NULL,
     "enabled" BOOLEAN NOT NULL DEFAULT true,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "BoardAutomation_pkey" PRIMARY KEY ("id")
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
 CREATE TABLE "Trigger" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
     "projectId" TEXT NOT NULL,
     "pack" TEXT NOT NULL,
     "type" TEXT NOT NULL DEFAULT 'manual',
     "intervalSec" INTEGER NOT NULL DEFAULT 3600,
     "enabled" BOOLEAN NOT NULL DEFAULT true,
-    "lastRunAt" TIMESTAMP(3),
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "Trigger_pkey" PRIMARY KEY ("id")
+    "lastRunAt" DATETIME,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
 CREATE TABLE "Connector" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
     "provider" TEXT NOT NULL,
     "apiKey" TEXT NOT NULL,
     "baseUrl" TEXT,
     "models" TEXT NOT NULL,
     "active" BOOLEAN NOT NULL DEFAULT false,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "Connector_pkey" PRIMARY KEY ("id")
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
 CREATE TABLE "LedgerEntry" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
     "runId" TEXT NOT NULL,
     "stageId" TEXT NOT NULL,
     "lever" TEXT NOT NULL,
     "tokensBefore" INTEGER NOT NULL,
     "tokensAfter" INTEGER NOT NULL,
     "saved" INTEGER NOT NULL,
-
-    CONSTRAINT "LedgerEntry_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "LedgerEntry_runId_fkey" FOREIGN KEY ("runId") REFERENCES "Run" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "WorkspaceConnector" (
-    "projectId" TEXT NOT NULL,
+    "projectId" TEXT NOT NULL PRIMARY KEY,
     "connectorId" TEXT NOT NULL,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "WorkspaceConnector_pkey" PRIMARY KEY ("projectId")
+    "updatedAt" DATETIME NOT NULL
 );
 
 -- CreateTable
 CREATE TABLE "ProjectPack" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
     "projectId" TEXT NOT NULL,
     "packName" TEXT NOT NULL,
     "installedVersion" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "ProjectPack_pkey" PRIMARY KEY ("id")
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
 );
 
 -- CreateTable
 CREATE TABLE "UsageStat" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
     "projectId" TEXT,
     "blockKind" TEXT NOT NULL,
     "blockName" TEXT NOT NULL,
     "invocations" INTEGER NOT NULL DEFAULT 0,
-    "lastUsedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "UsageStat_pkey" PRIMARY KEY ("id")
+    "lastUsedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
 );
 
 -- CreateTable
 CREATE TABLE "Design" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
     "projectId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL DEFAULT '',
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "Design_pkey" PRIMARY KEY ("id")
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
 CREATE TABLE "DesignArtifact" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
     "designId" TEXT NOT NULL,
     "kind" TEXT NOT NULL DEFAULT 'mockup',
     "title" TEXT NOT NULL,
     "format" TEXT NOT NULL DEFAULT 'html',
     "content" TEXT NOT NULL DEFAULT '',
     "version" INTEGER NOT NULL DEFAULT 1,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "DesignArtifact_pkey" PRIMARY KEY ("id")
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL,
+    CONSTRAINT "DesignArtifact_designId_fkey" FOREIGN KEY ("designId") REFERENCES "Design" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateTable
 CREATE TABLE "DesignVersion" (
-    "id" TEXT NOT NULL,
+    "id" TEXT NOT NULL PRIMARY KEY,
     "artifactId" TEXT NOT NULL,
     "build" INTEGER NOT NULL,
     "content" TEXT NOT NULL DEFAULT '',
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "DesignVersion_pkey" PRIMARY KEY ("id")
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "DesignVersion_artifactId_fkey" FOREIGN KEY ("artifactId") REFERENCES "DesignArtifact" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- CreateIndex
@@ -411,34 +375,4 @@ CREATE INDEX "DesignArtifact_designId_idx" ON "DesignArtifact"("designId");
 
 -- CreateIndex
 CREATE INDEX "DesignVersion_artifactId_idx" ON "DesignVersion"("artifactId");
-
--- AddForeignKey
-ALTER TABLE "CatalogItem" ADD CONSTRAINT "CatalogItem_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Run" ADD CONSTRAINT "Run_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Stage" ADD CONSTRAINT "Stage_runId_fkey" FOREIGN KEY ("runId") REFERENCES "Run"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "RunEvent" ADD CONSTRAINT "RunEvent_runId_fkey" FOREIGN KEY ("runId") REFERENCES "Run"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Checkpoint" ADD CONSTRAINT "Checkpoint_runId_fkey" FOREIGN KEY ("runId") REFERENCES "Run"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "StageLog" ADD CONSTRAINT "StageLog_runId_fkey" FOREIGN KEY ("runId") REFERENCES "Run"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "BoardComment" ADD CONSTRAINT "BoardComment_cardId_fkey" FOREIGN KEY ("cardId") REFERENCES "BoardCard"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "LedgerEntry" ADD CONSTRAINT "LedgerEntry_runId_fkey" FOREIGN KEY ("runId") REFERENCES "Run"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "DesignArtifact" ADD CONSTRAINT "DesignArtifact_designId_fkey" FOREIGN KEY ("designId") REFERENCES "Design"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "DesignVersion" ADD CONSTRAINT "DesignVersion_artifactId_fkey" FOREIGN KEY ("artifactId") REFERENCES "DesignArtifact"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 

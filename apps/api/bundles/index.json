@@ -1,0 +1,667 @@
+[
+  {
+    "id": "tpl-senior-fullstack",
+    "kind": "template",
+    "name": "Senior Fullstack",
+    "description": "Everything to ship full-stack features: code review, API design, testing strategy and a commit flow.",
+    "author": "vcc",
+    "tags": [
+      "development"
+    ],
+    "stars": 6481,
+    "source": "",
+    "members": [
+      "agent-code-reviewer",
+      "skill-api-design",
+      "skill-testing-strategy",
+      "cmd-commit",
+      "cmd-new-module"
+    ]
+  },
+  {
+    "id": "tpl-react-app",
+    "kind": "template",
+    "name": "React App",
+    "description": "React + TypeScript best practices: API design skill, code review, PR review command and format-on-save.",
+    "author": "vcc",
+    "tags": [
+      "web-development"
+    ],
+    "stars": 3934,
+    "source": "",
+    "members": [
+      "skill-api-design",
+      "agent-code-reviewer",
+      "cmd-review-pr",
+      "hook-format-on-save"
+    ]
+  },
+  {
+    "id": "tpl-token-saver",
+    "kind": "template",
+    "name": "Token Saver",
+    "description": "The full token-efficiency stack — CodeGraph, Ponytail and Caveman wired together.",
+    "author": "vcc",
+    "tags": [
+      "tokens"
+    ],
+    "stars": 9200,
+    "source": "",
+    "members": [
+      "skill-ponytail",
+      "skill-caveman",
+      "mcp-codegraph",
+      "skill-token-efficient"
+    ]
+  },
+  {
+    "id": "tpl-frontend-design",
+    "kind": "template",
+    "name": "Frontend Design",
+    "description": "Distinctive, production-grade UI work: docs, token-efficient coding and formatting.",
+    "author": "vcc",
+    "tags": [
+      "creative-design"
+    ],
+    "stars": 4870,
+    "source": "",
+    "members": [
+      "agent-docs-writer",
+      "skill-token-efficient",
+      "hook-format-on-save"
+    ]
+  },
+  {
+    "id": "skill-ponytail",
+    "kind": "plugin",
+    "name": "ponytail",
+    "description": "Makes the agent write the least code that works — a decision ladder before generating.",
+    "author": "DietrichGebert",
+    "tags": [
+      "tokens",
+      "codegen"
+    ],
+    "stars": 74000,
+    "source": "https://github.com/DietrichGebert/ponytail",
+    "archive": "skill-ponytail.zip",
+    "entries": [
+      ".claude/plugins/ponytail/skills/ponytail/SKILL.md",
+      ".claude/plugins/ponytail/README.md",
+      ".claude/plugins/ponytail/.claude-plugin/plugin.json",
+      ".claude/plugins/ponytail/.claude-plugin/marketplace.json",
+      ".claude/plugins/ponytail/commands/ponytail-audit.toml",
+      ".claude/plugins/ponytail/commands/ponytail-debt.toml",
+      ".claude/plugins/ponytail/commands/ponytail-gain.toml",
+      ".claude/plugins/ponytail/commands/ponytail-help.toml",
+      ".claude/plugins/ponytail/commands/ponytail-review.toml",
+      ".claude/plugins/ponytail/commands/ponytail.toml",
+      ".claude/plugins/ponytail/hooks/claude-codex-hooks.json",
+      ".claude/plugins/ponytail/hooks/copilot-hooks.json",
+      ".claude/plugins/ponytail/hooks/ponytail-activate.js",
+      ".claude/plugins/ponytail/hooks/ponytail-config.js",
+      ".claude/plugins/ponytail/hooks/ponytail-instructions.js",
+      ".claude/plugins/ponytail/hooks/ponytail-mode-tracker.js",
+      ".claude/plugins/ponytail/hooks/ponytail-runtime.js",
+      ".claude/plugins/ponytail/hooks/ponytail-statusline.ps1",
+      ".claude/plugins/ponytail/hooks/ponytail-statusline.sh",
+      ".claude/plugins/ponytail/hooks/ponytail-subagent.js",
+      ".claude/plugins/ponytail/hooks/qoder-hooks.json",
+      ".claude/plugins/ponytail/plugin.json",
+      ".claude/plugins/ponytail/skills/ponytail-audit/SKILL.md",
+      ".claude/plugins/ponytail/skills/ponytail-debt/SKILL.md",
+      ".claude/plugins/ponytail/skills/ponytail-gain/SKILL.md",
+      ".claude/plugins/ponytail/skills/ponytail-help/SKILL.md",
+      ".claude/plugins/ponytail/skills/ponytail-review/SKILL.md"
+    ]
+  },
+  {
+    "id": "skill-caveman",
+    "kind": "plugin",
+    "name": "caveman",
+    "description": "Telegraphic output style that strips filler while keeping code intact. ~65% fewer output tokens.",
+    "author": "JuliusBrussee",
+    "tags": [
+      "tokens",
+      "output"
+    ],
+    "stars": 92000,
+    "source": "https://github.com/JuliusBrussee/caveman",
+    "archive": "skill-caveman.zip",
+    "entries": [
+      ".claude/plugins/caveman/skills/caveman/SKILL.md",
+      ".claude/plugins/caveman/README.md",
+      ".claude/plugins/caveman/skills/cavecrew/README.md",
+      ".claude/plugins/caveman/skills/caveman-commit/README.md",
+      ".claude/plugins/caveman/skills/caveman-compress/README.md",
+      ".claude/plugins/caveman/skills/caveman-help/README.md",
+      ".claude/plugins/caveman/skills/caveman-learn/README.md",
+      ".claude/plugins/caveman/skills/caveman-review/README.md",
+      ".claude/plugins/caveman/skills/caveman-stats/README.md",
+      ".claude/plugins/caveman/skills/caveman/README.md",
+      ".claude/plugins/caveman/.claude-plugin/plugin.json",
+      ".claude/plugins/caveman/.claude-plugin/marketplace.json",
+      ".claude/plugins/caveman/agents/agents.json",
+      ".claude/plugins/caveman/agents/cavecrew-builder.md",
+      ".claude/plugins/caveman/agents/cavecrew-investigator.md",
+      ".claude/plugins/caveman/agents/cavecrew-reviewer.md",
+      ".claude/plugins/caveman/agents/compile.mjs",
+      ".claude/plugins/caveman/agents/delegate/caveman-delegate-mcp.mjs",
+      ".claude/plugins/caveman/agents/delegate/portable-process.mjs",
+      ".claude/plugins/caveman/agents/delegate/portable-process.test.mjs",
+      ".claude/plugins/caveman/agents/docs/AGENTS.md",
+      ".claude/plugins/caveman/agents/docs/CLAUDE.md",
+      ".claude/plugins/caveman/agents/drift-report.mjs",
+      ".claude/plugins/caveman/agents/probe-installed.mjs",
+      ".claude/plugins/caveman/agents/profiles/aider.json",
+      ".claude/plugins/caveman/agents/profiles/claude.json",
+      ".claude/plugins/caveman/agents/profiles/codex.json",
+      ".claude/plugins/caveman/agents/profiles/gemini.json",
+      ".claude/plugins/caveman/agents/profiles/hermes.json",
+      ".claude/plugins/caveman/agents/profiles/openclaw.json",
+      ".claude/plugins/caveman/agents/profiles/opencode.json",
+      ".claude/plugins/caveman/agents/profiles/pi.json",
+      ".claude/plugins/caveman/agents/profiles/schema.json",
+      ".claude/plugins/caveman/agents/reserved-verbs.json",
+      ".claude/plugins/caveman/commands/caveman-commit.toml",
+      ".claude/plugins/caveman/commands/caveman-init.md",
+      ".claude/plugins/caveman/commands/caveman-init.toml",
+      ".claude/plugins/caveman/commands/caveman-review.toml",
+      ".claude/plugins/caveman/commands/caveman-stats.toml",
+      ".claude/plugins/caveman/commands/caveman.toml",
+      ".claude/plugins/caveman/skills/cavecrew/SKILL.md",
+      ".claude/plugins/caveman/skills/caveman-commit/SKILL.md",
+      ".claude/plugins/caveman/skills/caveman-compress/SECURITY.md",
+      ".claude/plugins/caveman/skills/caveman-compress/SKILL.md",
+      ".claude/plugins/caveman/skills/caveman-compress/scripts/__init__.py",
+      ".claude/plugins/caveman/skills/caveman-compress/scripts/__main__.py",
+      ".claude/plugins/caveman/skills/caveman-compress/scripts/benchmark.py",
+      ".claude/plugins/caveman/skills/caveman-compress/scripts/cli.py",
+      ".claude/plugins/caveman/skills/caveman-compress/scripts/compress.py",
+      ".claude/plugins/caveman/skills/caveman-compress/scripts/detect.py",
+      ".claude/plugins/caveman/skills/caveman-compress/scripts/validate.py",
+      ".claude/plugins/caveman/skills/caveman-discover/SKILL.md",
+      ".claude/plugins/caveman/skills/caveman-evidence-review/SKILL.md",
+      ".claude/plugins/caveman/skills/caveman-explore/SKILL.md",
+      ".claude/plugins/caveman/skills/caveman-explore/package.json",
+      ".claude/plugins/caveman/skills/caveman-explore/tests/skill-file.test.mjs",
+      ".claude/plugins/caveman/skills/caveman-help/SKILL.md",
+      ".claude/plugins/caveman/skills/caveman-learn/CLAUDE.md",
+      ".claude/plugins/caveman/skills/caveman-learn/SKILL.md",
+      ".claude/plugins/caveman/skills/caveman-learn/package.json",
+      ".claude/plugins/caveman/skills/caveman-learn/tests/index.js",
+      ".claude/plugins/caveman/skills/caveman-learn/tests/skill-file.test.mjs",
+      ".claude/plugins/caveman/skills/caveman-manage/SKILL.md",
+      ".claude/plugins/caveman/skills/caveman-optimize/SKILL.md",
+      ".claude/plugins/caveman/skills/caveman-review/SKILL.md",
+      ".claude/plugins/caveman/skills/caveman-setup/SKILL.md",
+      ".claude/plugins/caveman/skills/caveman-stats/SKILL.md",
+      ".claude/plugins/caveman/skills/compile.mjs",
+      ".claude/plugins/caveman/skills/engine-mcp-tools.json",
+      ".claude/plugins/caveman/skills/generated/aider/pack.json",
+      ".claude/plugins/caveman/skills/generated/claude/pack.json",
+      ".claude/plugins/caveman/skills/generated/codex/pack.json",
+      ".claude/plugins/caveman/skills/generated/gemini/pack.json",
+      ".claude/plugins/caveman/skills/generated/hermes/pack.json",
+      ".claude/plugins/caveman/skills/generated/opencode/pack.json",
+      ".claude/plugins/caveman/skills/investigate-first/SKILL.md",
+      ".claude/plugins/caveman/skills/investigate-first/agents/openai.yaml",
+      ".claude/plugins/caveman/skills/lean-build/SKILL.md",
+      ".claude/plugins/caveman/skills/lean-build/agents/openai.yaml",
+      ".claude/plugins/caveman/skills/migration/SKILL.md",
+      ".claude/plugins/caveman/skills/migration/agents/openai.yaml",
+      ".claude/plugins/caveman/skills/native-core.md",
+      ".claude/plugins/caveman/skills/registry.json",
+      ".claude/plugins/caveman/skills/safe-refactor/SKILL.md",
+      ".claude/plugins/caveman/skills/safe-refactor/agents/openai.yaml",
+      ".claude/plugins/caveman/skills/surgical-patch/SKILL.md",
+      ".claude/plugins/caveman/skills/surgical-patch/agents/openai.yaml",
+      ".claude/plugins/caveman/skills/verbs-gate.mjs",
+      ".claude/plugins/caveman/skills/verify-and-stop/SKILL.md",
+      ".claude/plugins/caveman/skills/verify-and-stop/agents/openai.yaml"
+    ]
+  },
+  {
+    "id": "skill-token-efficient",
+    "kind": "skill",
+    "name": "token-efficient-coding",
+    "description": "Combine CodeGraph, Ponytail and Caveman to spend the fewest tokens on any coding task.",
+    "author": "vcc",
+    "tags": [
+      "tokens"
+    ],
+    "stars": 0,
+    "source": "",
+    "archive": "skill-token-efficient.zip",
+    "entries": [
+      ".claude/skills/token-efficient-coding/SKILL.md"
+    ]
+  },
+  {
+    "id": "skill-api-design",
+    "kind": "skill",
+    "name": "api-design",
+    "description": "Design consistent, versioned REST/RPC APIs with clear error contracts.",
+    "author": "community",
+    "tags": [
+      "backend"
+    ],
+    "stars": 1200,
+    "source": "",
+    "archive": "skill-api-design.zip",
+    "entries": [
+      ".claude/skills/api-design/SKILL.md"
+    ]
+  },
+  {
+    "id": "skill-testing-strategy",
+    "kind": "skill",
+    "name": "testing-strategy",
+    "description": "Pick the right test layers and write meaningful, non-brittle tests.",
+    "author": "community",
+    "tags": [
+      "testing"
+    ],
+    "stars": 900,
+    "source": "",
+    "archive": "skill-testing-strategy.zip",
+    "entries": [
+      ".claude/skills/testing-strategy/SKILL.md"
+    ]
+  },
+  {
+    "id": "agent-code-reviewer",
+    "kind": "agent",
+    "name": "code-reviewer",
+    "description": "Reviews a diff against project rules and reports ranked findings. Read-only.",
+    "author": "vcc",
+    "tags": [
+      "review"
+    ],
+    "stars": 0,
+    "source": "",
+    "archive": "agent-code-reviewer.zip",
+    "entries": [
+      ".claude/agents/code-reviewer.md"
+    ]
+  },
+  {
+    "id": "agent-security-auditor",
+    "kind": "agent",
+    "name": "security-auditor",
+    "description": "Scans changes for injection, secrets and unsafe patterns before commit.",
+    "author": "community",
+    "tags": [
+      "security"
+    ],
+    "stars": 2100,
+    "source": "",
+    "archive": "agent-security-auditor.zip",
+    "entries": [
+      ".claude/agents/security-auditor.md"
+    ]
+  },
+  {
+    "id": "agent-test-writer",
+    "kind": "agent",
+    "name": "test-writer",
+    "description": "Generates unit and integration tests for the changed surface.",
+    "author": "community",
+    "tags": [
+      "testing"
+    ],
+    "stars": 1500,
+    "source": "",
+    "archive": "agent-test-writer.zip",
+    "entries": [
+      ".claude/agents/test-writer.md"
+    ]
+  },
+  {
+    "id": "agent-docs-writer",
+    "kind": "agent",
+    "name": "docs-writer",
+    "description": "Writes and updates README and inline docs from the code.",
+    "author": "community",
+    "tags": [
+      "docs"
+    ],
+    "stars": 1100,
+    "source": "",
+    "archive": "agent-docs-writer.zip",
+    "entries": [
+      ".claude/agents/docs-writer.md"
+    ]
+  },
+  {
+    "id": "cmd-commit",
+    "kind": "command",
+    "name": "commit",
+    "description": "Stage, write a conventional commit message and commit.",
+    "author": "community",
+    "tags": [
+      "git"
+    ],
+    "stars": 3400,
+    "source": "",
+    "archive": "cmd-commit.zip",
+    "entries": [
+      ".claude/commands/commit.md"
+    ]
+  },
+  {
+    "id": "cmd-review-pr",
+    "kind": "command",
+    "name": "review-pr",
+    "description": "Fetch a PR and produce a structured review.",
+    "author": "community",
+    "tags": [
+      "git",
+      "review"
+    ],
+    "stars": 2200,
+    "source": "",
+    "archive": "cmd-review-pr.zip",
+    "entries": [
+      ".claude/commands/review-pr.md"
+    ]
+  },
+  {
+    "id": "cmd-new-module",
+    "kind": "command",
+    "name": "new-module",
+    "description": "Scaffold a new backend feature module.",
+    "author": "vcc",
+    "tags": [
+      "scaffold"
+    ],
+    "stars": 0,
+    "source": "",
+    "archive": "cmd-new-module.zip",
+    "entries": [
+      ".claude/commands/new-module.md"
+    ]
+  },
+  {
+    "id": "hook-format-on-save",
+    "kind": "hook",
+    "name": "format-on-save",
+    "description": "Run the formatter after every file edit.",
+    "author": "community",
+    "tags": [
+      "quality"
+    ],
+    "stars": 800,
+    "source": "",
+    "archive": "hook-format-on-save.zip",
+    "entries": [
+      ".claude/hooks/format-on-save.sh"
+    ]
+  },
+  {
+    "id": "hook-block-secrets",
+    "kind": "hook",
+    "name": "block-secrets",
+    "description": "Block tool calls that would write API keys or secrets to disk.",
+    "author": "community",
+    "tags": [
+      "security"
+    ],
+    "stars": 1900,
+    "source": "",
+    "archive": "hook-block-secrets.zip",
+    "entries": [
+      ".claude/hooks/block-secrets.sh"
+    ]
+  },
+  {
+    "id": "hook-notify-on-stop",
+    "kind": "hook",
+    "name": "notify-on-stop",
+    "description": "Send a desktop notification when a run finishes or needs input.",
+    "author": "community",
+    "tags": [
+      "dx"
+    ],
+    "stars": 600,
+    "source": "",
+    "archive": "hook-notify-on-stop.zip",
+    "entries": [
+      ".claude/hooks/notify-on-stop.sh"
+    ]
+  },
+  {
+    "id": "mcp-codegraph",
+    "kind": "mcp",
+    "name": "codegraph",
+    "description": "Local code knowledge graph over MCP — cut tokens ~47% by querying structure, not files.",
+    "author": "codegraph-ai",
+    "tags": [
+      "tokens",
+      "context"
+    ],
+    "stars": 47000,
+    "source": "https://github.com/codegraph-ai/CodeGraph",
+    "mcp": {
+      "name": "codegraph",
+      "command": "codegraph",
+      "args": [
+        "mcp"
+      ]
+    }
+  },
+  {
+    "id": "mcp-filesystem",
+    "kind": "mcp",
+    "name": "filesystem",
+    "description": "Read and write files under an allowed root over MCP.",
+    "author": "modelcontextprotocol",
+    "tags": [
+      "files"
+    ],
+    "stars": 15000,
+    "source": "https://github.com/modelcontextprotocol/servers",
+    "mcp": {
+      "name": "filesystem",
+      "command": "mcp-server-filesystem",
+      "args": []
+    }
+  },
+  {
+    "id": "mcp-github",
+    "kind": "mcp",
+    "name": "github",
+    "description": "Query issues, PRs and repos over MCP.",
+    "author": "modelcontextprotocol",
+    "tags": [
+      "git"
+    ],
+    "stars": 15000,
+    "source": "https://github.com/modelcontextprotocol/servers",
+    "mcp": {
+      "name": "github",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ]
+    }
+  },
+  {
+    "id": "mcp-postgres",
+    "kind": "mcp",
+    "name": "postgres",
+    "description": "Run read-only SQL against a Postgres database over MCP.",
+    "author": "modelcontextprotocol",
+    "tags": [
+      "data"
+    ],
+    "stars": 15000,
+    "source": "https://github.com/modelcontextprotocol/servers",
+    "mcp": {
+      "name": "postgres",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-postgres"
+      ]
+    }
+  },
+  {
+    "id": "plugin-scaffolding",
+    "kind": "plugin",
+    "name": "scaffolding",
+    "description": "Spec-driven multi-agent orchestration plugin with per-phase model tiers.",
+    "author": "komluk",
+    "tags": [
+      "orchestration"
+    ],
+    "stars": 15,
+    "source": "https://github.com/komluk/scaffolding",
+    "archive": "plugin-scaffolding.zip",
+    "entries": [
+      ".claude/plugins/scaffolding/README.md",
+      ".claude/plugins/scaffolding/hooks/README.md",
+      ".claude/plugins/scaffolding/.claude-plugin/plugin.json",
+      ".claude/plugins/scaffolding/.claude-plugin/marketplace.json",
+      ".claude/plugins/scaffolding/agents/analyst.md",
+      ".claude/plugins/scaffolding/agents/architect.md",
+      ".claude/plugins/scaffolding/agents/coordinator.md",
+      ".claude/plugins/scaffolding/agents/debugger.md",
+      ".claude/plugins/scaffolding/agents/developer.md",
+      ".claude/plugins/scaffolding/agents/devops.md",
+      ".claude/plugins/scaffolding/agents/gitops.md",
+      ".claude/plugins/scaffolding/agents/mcp-builder.md",
+      ".claude/plugins/scaffolding/agents/optimizer.md",
+      ".claude/plugins/scaffolding/agents/prompt-engineer.md",
+      ".claude/plugins/scaffolding/agents/researcher.md",
+      ".claude/plugins/scaffolding/agents/reviewer.md",
+      ".claude/plugins/scaffolding/agents/tech-writer.md",
+      ".claude/plugins/scaffolding/commands/context.md",
+      ".claude/plugins/scaffolding/commands/create-skill.md",
+      ".claude/plugins/scaffolding/commands/doctor.md",
+      ".claude/plugins/scaffolding/commands/init-openspec.md",
+      ".claude/plugins/scaffolding/commands/init-rules.md",
+      ".claude/plugins/scaffolding/commands/init-scaffolding.md",
+      ".claude/plugins/scaffolding/commands/learn.md",
+      ".claude/plugins/scaffolding/commands/memory.md",
+      ".claude/plugins/scaffolding/commands/sofa.md",
+      ".claude/plugins/scaffolding/commands/specs/apply.md",
+      ".claude/plugins/scaffolding/commands/specs/archive.md",
+      ".claude/plugins/scaffolding/commands/specs/bulk-archive.md",
+      ".claude/plugins/scaffolding/commands/specs/continue.md",
+      ".claude/plugins/scaffolding/commands/specs/explore.md",
+      ".claude/plugins/scaffolding/commands/specs/ff.md",
+      ".claude/plugins/scaffolding/commands/specs/new.md",
+      ".claude/plugins/scaffolding/commands/specs/onboard.md",
+      ".claude/plugins/scaffolding/commands/specs/sync.md",
+      ".claude/plugins/scaffolding/commands/specs/verify.md",
+      ".claude/plugins/scaffolding/hooks/auto-init-check.sh",
+      ".claude/plugins/scaffolding/hooks/block-destructive-rm.sh",
+      ".claude/plugins/scaffolding/hooks/block-env-write.sh",
+      ".claude/plugins/scaffolding/hooks/block-force-push.sh",
+      ".claude/plugins/scaffolding/hooks/block-subagent.sh",
+      ".claude/plugins/scaffolding/hooks/completion-nudge.sh",
+      ".claude/plugins/scaffolding/hooks/file-size-warn.sh",
+      ".claude/plugins/scaffolding/hooks/file-staleness-check.sh",
+      ".claude/plugins/scaffolding/hooks/file-staleness-update.sh",
+      ".claude/plugins/scaffolding/hooks/memory-ingest-mark.sh",
+      ".claude/plugins/scaffolding/hooks/memory-ingest.sh",
+      ".claude/plugins/scaffolding/hooks/memory-project-id.sh",
+      ".claude/plugins/scaffolding/hooks/notify.sh",
+      ".claude/plugins/scaffolding/hooks/post-edit-format.sh",
+      ".claude/plugins/scaffolding/hooks/post-edit-review.sh",
+      ".claude/plugins/scaffolding/hooks/pre-commit-validation.sh",
+      ".claude/plugins/scaffolding/hooks/refresh-mcp-token.sh",
+      ".claude/plugins/scaffolding/hooks/session-start-protocol.sh",
+      ".claude/plugins/scaffolding/hooks/worktree-create.sh",
+      ".claude/plugins/scaffolding/hooks/worktree-remove.sh",
+      ".claude/plugins/scaffolding/skills/agent-comms/SKILL.md",
+      ".claude/plugins/scaffolding/skills/agent-memory/SKILL.md",
+      ".claude/plugins/scaffolding/skills/api-design/SKILL.md",
+      ".claude/plugins/scaffolding/skills/context-engineering/SKILL.md",
+      ".claude/plugins/scaffolding/skills/database-optimization/SKILL.md",
+      ".claude/plugins/scaffolding/skills/distill/SKILL.md",
+      ".claude/plugins/scaffolding/skills/docker-templates/SKILL.md",
+      ".claude/plugins/scaffolding/skills/docker-templates/references/Dockerfile.python",
+      ".claude/plugins/scaffolding/skills/docker-templates/references/Dockerfile.react",
+      ".claude/plugins/scaffolding/skills/docker-templates/references/docker-compose.example.yml",
+      ".claude/plugins/scaffolding/skills/error-handling/SKILL.md",
+      ".claude/plugins/scaffolding/skills/git-operations/SKILL.md",
+      ".claude/plugins/scaffolding/skills/github-actions-template/SKILL.md",
+      ".claude/plugins/scaffolding/skills/github-actions-template/references/ci-template.yml",
+      ".claude/plugins/scaffolding/skills/logging-standards/SKILL.md",
+      ".claude/plugins/scaffolding/skills/mcp-tools/SKILL.md",
+      ".claude/plugins/scaffolding/skills/memory/SKILL.md",
+      ".claude/plugins/scaffolding/skills/monitoring-observability/SKILL.md",
+      ".claude/plugins/scaffolding/skills/mui-styling/SKILL.md",
+      ".claude/plugins/scaffolding/skills/pattern-recognition/SKILL.md",
+      ".claude/plugins/scaffolding/skills/planning-methodology/SKILL.md",
+      ".claude/plugins/scaffolding/skills/python-patterns/SKILL.md",
+      ".claude/plugins/scaffolding/skills/quality-validation/SKILL.md",
+      ".claude/plugins/scaffolding/skills/react-patterns/SKILL.md",
+      ".claude/plugins/scaffolding/skills/research-methodology/SKILL.md",
+      ".claude/plugins/scaffolding/skills/security-review-checklists/SKILL.md",
+      ".claude/plugins/scaffolding/skills/security-review-checklists/references/auth-checklist.md",
+      ".claude/plugins/scaffolding/skills/security-review-checklists/references/owasp-checklist.md",
+      ".claude/plugins/scaffolding/skills/semantic-memory-mcp/SKILL.md",
+      ".claude/plugins/scaffolding/skills/semantic-memory-store/SKILL.md",
+      ".claude/plugins/scaffolding/skills/skill-authoring/SKILL.md",
+      ".claude/plugins/scaffolding/skills/sofa-search/SKILL.md",
+      ".claude/plugins/scaffolding/skills/spec-design/SKILL.md",
+      ".claude/plugins/scaffolding/skills/spec-develop/SKILL.md",
+      ".claude/plugins/scaffolding/skills/spec-research/SKILL.md",
+      ".claude/plugins/scaffolding/skills/spec-review/SKILL.md",
+      ".claude/plugins/scaffolding/skills/spec-workflow/SKILL.md",
+      ".claude/plugins/scaffolding/skills/state-management/SKILL.md",
+      ".claude/plugins/scaffolding/skills/testing-strategy/SKILL.md",
+      ".claude/plugins/scaffolding/skills/ui-ux-pro-max/SKILL.md",
+      ".claude/plugins/scaffolding/skills/watch-patterns/SKILL.md",
+      ".claude/plugins/scaffolding/skills/worktree-management/SKILL.md"
+    ]
+  },
+  {
+    "id": "plugin-spec-kit",
+    "kind": "plugin",
+    "name": "spec-kit",
+    "description": "Spec-driven development: specify → plan → tasks → implement, across many agents.",
+    "author": "github",
+    "tags": [
+      "spec"
+    ],
+    "stars": 124000,
+    "source": "https://github.com/github/spec-kit",
+    "archive": "plugin-spec-kit.zip",
+    "entries": [
+      ".claude/plugins/spec-kit/README.md"
+    ]
+  },
+  {
+    "id": "plugin-claude-flow",
+    "kind": "plugin",
+    "name": "claude-flow",
+    "description": "Multi-agent swarm orchestration for Claude Code.",
+    "author": "ruvnet",
+    "tags": [
+      "orchestration"
+    ],
+    "stars": 65000,
+    "source": "https://github.com/ruvnet/ruflo",
+    "archive": "plugin-claude-flow.zip",
+    "entries": [
+      ".claude/plugins/claude-flow/.claude-plugin/README.md",
+      ".claude/plugins/claude-flow/README.md",
+      ".claude/plugins/claude-flow/.claude-plugin/plugin.json",
+      ".claude/plugins/claude-flow/.claude-plugin/docs/INSTALLATION.md",
+      ".claude/plugins/claude-flow/.claude-plugin/docs/PLUGIN_SUMMARY.md",
+      ".claude/plugins/claude-flow/.claude-plugin/docs/QUICKSTART.md",
+      ".claude/plugins/claude-flow/.claude-plugin/docs/STRUCTURE.md",
+      ".claude/plugins/claude-flow/.claude-plugin/hooks/hooks.json",
+      ".claude/plugins/claude-flow/.claude-plugin/marketplace.json",
+      ".claude/plugins/claude-flow/.claude-plugin/scripts/install.sh",
+      ".claude/plugins/claude-flow/.claude-plugin/scripts/ruflo-hook.cjs",
+      ".claude/plugins/claude-flow/.claude-plugin/scripts/ruflo-hook.sh",
+      ".claude/plugins/claude-flow/.claude-plugin/scripts/uninstall.sh",
+      ".claude/plugins/claude-flow/.claude-plugin/scripts/verify.sh"
+    ]
+  }
+]

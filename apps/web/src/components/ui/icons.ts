@@ -12,6 +12,7 @@ export {
   PlayCircleOutlined,
   StopOutlined,
   DeleteOutlined,
+  EditOutlined,
   ExperimentOutlined,
   SaveOutlined,
   MessageOutlined,

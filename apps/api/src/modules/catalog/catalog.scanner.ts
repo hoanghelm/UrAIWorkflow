@@ -40,21 +40,59 @@ export class CatalogScanner {
     }
 
     for (const name of await this.readPlugins(claudeDir)) {
+      const pluginDir = path.join(claudeDir, "plugins", name);
       items.push({
         id: `${projectId}:plugin:${name}`,
         kind: "plugin",
         name,
         scope: "project",
-        path: path.join(claudeDir, "plugins"),
+        path: pluginDir,
         projectId,
         trust: "community",
         version: "0.0.0",
         source: "discovered",
         meta: {},
       });
+      await this.scanPluginContents(items, projectId, pluginDir, name);
     }
 
     return items;
+  }
+
+  private async scanPluginContents(
+    items: CatalogItem[],
+    projectId: string,
+    pluginDir: string,
+    plugin: string,
+  ): Promise<void> {
+    const seen = new Set(items.map((i) => `${i.kind}:${i.name}`));
+    for (const { dir, kind } of KIND_DIRS) {
+      const target = path.join(pluginDir, dir);
+      for (const name of await this.listNames(target)) {
+        if (seen.has(`${kind}:${name}`)) {
+          continue;
+        }
+        seen.add(`${kind}:${name}`);
+        const itemPath = path.join(target, name);
+        const meta =
+          kind === "agent" || kind === "skill" ? await this.readMeta(itemPath, name, kind) : {};
+        meta.plugin = plugin;
+        items.push({
+          id: `${projectId}:plugin:${plugin}:${kind}:${name}`,
+          kind,
+          name,
+          title: typeof meta.title === "string" ? meta.title : undefined,
+          description: typeof meta.description === "string" ? meta.description : undefined,
+          scope: "project",
+          path: itemPath,
+          projectId,
+          trust: "community",
+          version: "0.0.0",
+          source: "discovered",
+          meta,
+        });
+      }
+    }
   }
 
   private async scanClaudeDir(

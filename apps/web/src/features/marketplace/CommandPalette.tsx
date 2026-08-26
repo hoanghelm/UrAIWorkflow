@@ -33,6 +33,37 @@ const KIND_ICON: Record<string, ReactNode> = {
   plugin: <BlockOutlined />,
 };
 
+function fuzzy(text: string, q: string): number | null {
+  const t = text.toLowerCase();
+  let score = 0;
+  let from = 0;
+  let prev = -2;
+  for (const ch of q) {
+    const idx = t.indexOf(ch, from);
+    if (idx === -1) {
+      return null;
+    }
+    score += idx === prev + 1 ? 3 : 1;
+    if (idx === 0 || /[\s\-_/.]/.test(t[idx - 1])) {
+      score += 2;
+    }
+    prev = idx;
+    from = idx + 1;
+  }
+  return score + Math.max(0, 8 - t.length / 6);
+}
+
+function itemScore(name: string, description: string, tags: string[], q: string): number | null {
+  const parts: number[] = [];
+  const n = fuzzy(name, q);
+  if (n != null) parts.push(n * 3 + 20);
+  const tag = tags.reduce<number>((best, t) => Math.max(best, fuzzy(t, q) ?? -Infinity), -Infinity);
+  if (tag > -Infinity) parts.push(tag * 1.5 + 8);
+  const d = fuzzy(description, q);
+  if (d != null) parts.push(d);
+  return parts.length ? Math.max(...parts) : null;
+}
+
 export function CommandPalette() {
   const navigate = useNavigate();
   const { data: list = [] } = useMarketplaceQuery();
@@ -69,15 +100,15 @@ export function CommandPalette() {
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
+    if (!q) {
+      return list.slice(0, 8);
+    }
     return list
-      .filter(
-        (i) =>
-          !q ||
-          i.name.toLowerCase().includes(q) ||
-          i.description.toLowerCase().includes(q) ||
-          i.tags.some((t) => t.includes(q)),
-      )
-      .slice(0, 8);
+      .map((i) => ({ i, score: itemScore(i.name, i.description, i.tags, q) }))
+      .filter((r): r is { i: MarketplaceItem; score: number } => r.score != null)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8)
+      .map((r) => r.i);
   }, [list, query]);
 
   const go = (item: MarketplaceItem) => {
@@ -124,7 +155,7 @@ export function CommandPalette() {
             }}
             onKeyDown={onKeyDown}
             placeholder="Search components"
-            className="w-full bg-transparent py-3 text-sm outline-none"
+            className="w-full bg-transparent py-3 text-sm text-gray-900 outline-none placeholder:text-gray-400 dark:text-gray-100 dark:placeholder:text-gray-500"
           />
           <kbd className="rounded border border-gray-200 px-1.5 text-xs text-faint dark:border-gray-700">
             ESC

@@ -8,6 +8,7 @@ import { PacksModule } from "./modules/packs/packs.module";
 import { LedgerModule } from "./modules/ledger/ledger.module";
 import { ConnectorsModule } from "./modules/connectors/connectors.module";
 import { MarketplaceModule } from "./modules/marketplace/marketplace.module";
+import { BundlesModule } from "./modules/bundles/bundles.module";
 import { WorkflowModule } from "./modules/workflow/workflow.module";
 import { RunnerModule } from "./modules/runner/runner.module";
 import { TriggersModule } from "./modules/triggers/triggers.module";
@@ -29,6 +30,7 @@ import { StatsModule } from "./modules/stats/stats.module";
     LedgerModule,
     ConnectorsModule,
     MarketplaceModule,
+    BundlesModule,
     WorkflowModule,
     RunnerModule,
     TriggersModule,
