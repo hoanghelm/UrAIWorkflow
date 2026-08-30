@@ -1,0 +1,1379 @@
+[
+  {
+    "name": "screen-from-figma",
+    "version": "0.1.0",
+    "title": "Screen from Figma",
+    "description": "Paste a Figma frame link. Reads the design and builds a matching screen in this workspace's own stack.",
+    "roles": [
+      "designer",
+      "developer"
+    ],
+    "tags": [
+      "figma",
+      "frontend",
+      "design-to-code"
+    ],
+    "triggers": [
+      "build this figma",
+      "figma to code",
+      "implement the design"
+    ],
+    "agents": [
+      "ui-ux-designer",
+      "frontend-engineer",
+      "reviewer"
+    ],
+    "skills": [
+      "design-tokens",
+      "accessibility",
+      "code-review"
+    ],
+    "stages": [
+      {
+        "id": "read-design",
+        "title": "Read design",
+        "agent": "ui-ux-designer",
+        "model": "opus",
+        "skills": [
+          "design-tokens",
+          "accessibility"
+        ],
+        "tools": [
+          "figma"
+        ],
+        "instruction": "The Figma frame URL is in inputs.figmaUrl. Use the Figma MCP tools (e.g. mcp__figma__get_figma_data and mcp__figma__download_figma_images) to read that node. Produce a precise, implementation-ready UI spec: the component/layout tree, spacing and sizing, colors and typography mapped to design tokens, interactive states, and a list of any exported assets with where they were saved. Do not write component code in this step."
+      },
+      {
+        "id": "implement",
+        "title": "Implement",
+        "agent": "frontend-engineer",
+        "model": "sonnet",
+        "skills": [
+          "design-tokens"
+        ],
+        "tools": [],
+        "instruction": "First detect THIS workspace's frontend stack and conventions from its .claude rules (e.g. .claude/rules/frontend.md), CLAUDE.md, and existing components — framework, styling system, component-wrapper conventions, and file layout. Then implement the screen from the design spec as new component file(s) that match those conventions exactly (reuse existing wrapped components; do not introduce a different UI library). Write the files into the repository. Keep it token-efficient and accessible.",
+        "verify": "build"
+      },
+      {
+        "id": "review",
+        "title": "Review",
+        "agent": "reviewer",
+        "model": "sonnet",
+        "skills": [
+          "code-review"
+        ],
+        "tools": [],
+        "instruction": "Review the generated component(s) against the workspace rules and the design spec: convention compliance, correctness, accessibility, and fidelity to the Figma frame. List any high-confidence issues with concrete fixes."
+      }
+    ],
+    "levers": [
+      "codegraph",
+      "ponytail",
+      "routing",
+      "caveman"
+    ],
+    "guardrails": {
+      "maxRetries": 2,
+      "maxLoopDepth": 6,
+      "budget": {
+        "tokens": 2000000
+      },
+      "stageTimeoutMs": 600000,
+      "qualityThreshold": "advisory",
+      "onBreach": "pause",
+      "requireHumanGate": [],
+      "allowedTools": [],
+      "backgroundSpend": false
+    },
+    "trust": "verified"
+  },
+  {
+    "name": "eng-loop",
+    "version": "0.1.0",
+    "title": "Engineering Loop",
+    "description": "Requirement to output engineering loop, token-efficient.",
+    "roles": [
+      "developer"
+    ],
+    "tags": [
+      "engineering",
+      "token-efficient"
+    ],
+    "triggers": [
+      "build feature",
+      "implement"
+    ],
+    "agents": [
+      "analyst",
+      "architect",
+      "developer",
+      "tester",
+      "reviewer"
+    ],
+    "skills": [
+      "spec-authoring",
+      "codegraph-query",
+      "ponytail"
+    ],
+    "stages": [
+      {
+        "id": "requirement",
+        "title": "Requirement",
+        "agent": "analyst",
+        "model": "opus",
+        "skills": [
+          "spec-authoring"
+        ],
+        "tools": [],
+        "gate": "human-approve"
+      },
+      {
+        "id": "analysis",
+        "title": "Analysis",
+        "agent": "architect",
+        "model": "opus",
+        "skills": [
+          "codegraph-query"
+        ],
+        "tools": []
+      },
+      {
+        "id": "coding",
+        "title": "Coding",
+        "agent": "developer",
+        "model": "sonnet",
+        "skills": [
+          "ponytail",
+          "codegraph-query"
+        ],
+        "tools": [],
+        "verify": "build"
+      },
+      {
+        "id": "testing",
+        "title": "Testing",
+        "agent": "tester",
+        "model": "haiku",
+        "skills": [],
+        "tools": [],
+        "verify": "tests"
+      },
+      {
+        "id": "output",
+        "title": "Output",
+        "agent": "reviewer",
+        "model": "sonnet",
+        "skills": [],
+        "tools": []
+      }
+    ],
+    "levers": [
+      "codegraph",
+      "rtk",
+      "ponytail",
+      "routing"
+    ],
+    "guardrails": {
+      "maxRetries": 3,
+      "maxLoopDepth": 8,
+      "budget": {
+        "tokens": 2000000
+      },
+      "stageTimeoutMs": 600000,
+      "qualityThreshold": "verifier-must-pass",
+      "onBreach": "pause",
+      "requireHumanGate": [
+        "output"
+      ],
+      "allowedTools": [],
+      "backgroundSpend": false
+    },
+    "trust": "verified"
+  },
+  {
+    "name": "tech-diagram",
+    "version": "0.1.0",
+    "title": "Architecture Diagram",
+    "description": "Repo to C4 / Mermaid architecture diagram.",
+    "roles": [
+      "developer",
+      "designer"
+    ],
+    "tags": [
+      "architecture",
+      "diagram"
+    ],
+    "triggers": [
+      "draw architecture",
+      "update diagram"
+    ],
+    "agents": [
+      "analyst",
+      "renderer"
+    ],
+    "skills": [
+      "repo-scan",
+      "mermaid-authoring"
+    ],
+    "stages": [
+      {
+        "id": "scan",
+        "title": "Scan",
+        "agent": "analyst",
+        "model": "opus",
+        "skills": [
+          "repo-scan",
+          "codegraph-query"
+        ],
+        "tools": []
+      },
+      {
+        "id": "render",
+        "title": "Render",
+        "agent": "renderer",
+        "model": "haiku",
+        "skills": [
+          "mermaid-authoring"
+        ],
+        "tools": [],
+        "verify": "renders"
+      }
+    ],
+    "levers": [
+      "codegraph",
+      "caveman",
+      "routing"
+    ],
+    "guardrails": {
+      "maxRetries": 2,
+      "maxLoopDepth": 4,
+      "budget": {
+        "tokens": 500000
+      },
+      "stageTimeoutMs": 300000,
+      "qualityThreshold": "verifier-must-pass",
+      "onBreach": "pause",
+      "requireHumanGate": [],
+      "allowedTools": [],
+      "backgroundSpend": false
+    },
+    "trust": "verified"
+  },
+  {
+    "name": "content-ops",
+    "version": "0.1.0",
+    "title": "Content Operations",
+    "description": "Requirement to a drafted, reviewed and delivered document.",
+    "roles": [
+      "ba-po",
+      "ops"
+    ],
+    "tags": [
+      "content",
+      "documents"
+    ],
+    "triggers": [
+      "write a report",
+      "draft content",
+      "generate a doc"
+    ],
+    "agents": [
+      "extractor",
+      "writer",
+      "reviewer",
+      "notifier"
+    ],
+    "skills": [
+      "requirement-analysis",
+      "doc-authoring"
+    ],
+    "stages": [
+      {
+        "id": "start",
+        "title": "Start",
+        "action": "start",
+        "agent": "system",
+        "model": "haiku",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "gather",
+        "title": "Gather source",
+        "action": "extract-data",
+        "agent": "extractor",
+        "model": "haiku",
+        "skills": [
+          "data-mapping"
+        ],
+        "tools": []
+      },
+      {
+        "id": "draft",
+        "title": "Draft document",
+        "action": "generate-doc",
+        "agent": "writer",
+        "model": "sonnet",
+        "skills": [
+          "doc-authoring"
+        ],
+        "tools": []
+      },
+      {
+        "id": "review",
+        "title": "Review",
+        "action": "review",
+        "agent": "reviewer",
+        "model": "sonnet",
+        "skills": [],
+        "tools": [],
+        "verify": "quality"
+      },
+      {
+        "id": "approve",
+        "title": "Approve",
+        "action": "approval",
+        "agent": "approver",
+        "model": "sonnet",
+        "skills": [],
+        "tools": [],
+        "gate": "human-approve"
+      },
+      {
+        "id": "deliver",
+        "title": "Deliver",
+        "action": "notify",
+        "agent": "notifier",
+        "model": "haiku",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "end",
+        "title": "End",
+        "action": "end",
+        "agent": "system",
+        "model": "haiku",
+        "skills": [],
+        "tools": []
+      }
+    ],
+    "levers": [
+      "routing",
+      "caveman",
+      "disclosure"
+    ],
+    "guardrails": {
+      "maxRetries": 2,
+      "maxLoopDepth": 4,
+      "budget": {
+        "tokens": 800000
+      },
+      "stageTimeoutMs": 300000,
+      "qualityThreshold": "advisory",
+      "onBreach": "pause",
+      "requireHumanGate": [
+        "approve"
+      ],
+      "allowedTools": [],
+      "backgroundSpend": false
+    },
+    "trust": "verified"
+  },
+  {
+    "name": "data-sync",
+    "version": "0.1.0",
+    "title": "Data Sync",
+    "description": "Extract, reshape and summarize data, then export or notify.",
+    "roles": [
+      "developer",
+      "ops"
+    ],
+    "tags": [
+      "data",
+      "etl"
+    ],
+    "triggers": [
+      "sync data",
+      "process a spreadsheet",
+      "etl"
+    ],
+    "agents": [
+      "extractor",
+      "transformer",
+      "summarizer",
+      "notifier"
+    ],
+    "skills": [
+      "data-mapping"
+    ],
+    "stages": [
+      {
+        "id": "start",
+        "title": "Start",
+        "action": "start",
+        "agent": "system",
+        "model": "haiku",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "extract",
+        "title": "Extract",
+        "action": "extract-data",
+        "agent": "extractor",
+        "model": "haiku",
+        "skills": [
+          "data-mapping"
+        ],
+        "tools": []
+      },
+      {
+        "id": "transform",
+        "title": "Transform",
+        "action": "transform",
+        "agent": "transformer",
+        "model": "sonnet",
+        "skills": [
+          "data-mapping"
+        ],
+        "tools": []
+      },
+      {
+        "id": "summarize",
+        "title": "Summarize",
+        "action": "summarize",
+        "agent": "summarizer",
+        "model": "haiku",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "export",
+        "title": "Export",
+        "action": "notify",
+        "agent": "notifier",
+        "model": "haiku",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "end",
+        "title": "End",
+        "action": "end",
+        "agent": "system",
+        "model": "haiku",
+        "skills": [],
+        "tools": []
+      }
+    ],
+    "levers": [
+      "routing",
+      "disclosure",
+      "caveman"
+    ],
+    "guardrails": {
+      "maxRetries": 2,
+      "maxLoopDepth": 4,
+      "budget": {
+        "tokens": 600000
+      },
+      "stageTimeoutMs": 300000,
+      "qualityThreshold": "advisory",
+      "onBreach": "pause",
+      "requireHumanGate": [],
+      "allowedTools": [],
+      "backgroundSpend": false
+    },
+    "trust": "verified"
+  },
+  {
+    "name": "feature-delivery",
+    "version": "0.1.0",
+    "title": "Feature Delivery",
+    "description": "Take a feature request from a clear requirement all the way to a reviewed pull request. Best for building a new capability into an existing codebase.",
+    "roles": [
+      "developer"
+    ],
+    "tags": [
+      "engineering",
+      "full-cycle",
+      "pull-request"
+    ],
+    "triggers": [
+      "build a feature",
+      "implement",
+      "add capability"
+    ],
+    "agents": [
+      "analyst",
+      "architect",
+      "developer",
+      "tester",
+      "reviewer"
+    ],
+    "skills": [
+      "spec-authoring",
+      "codegraph-query",
+      "ponytail",
+      "test-authoring"
+    ],
+    "stages": [
+      {
+        "id": "clarify",
+        "title": "Clarify the requirement",
+        "action": "ai-task",
+        "agent": "analyst",
+        "model": "opus",
+        "description": "Turn the raw request into a crisp, testable requirement. Surface hidden assumptions and edge cases before any code is written.",
+        "instruction": "Restate the request as a short problem statement, list explicit acceptance criteria, and call out open questions or assumptions that need a decision.",
+        "skills": [
+          "spec-authoring"
+        ],
+        "tools": [],
+        "gate": "human-approve"
+      },
+      {
+        "id": "design",
+        "title": "Technical design",
+        "action": "ai-task",
+        "agent": "architect",
+        "model": "opus",
+        "description": "Decide where the change lives and how it fits the existing architecture — the modules touched, data flow, and the smallest sensible approach.",
+        "instruction": "Using the code graph, identify the files and modules to change, describe the approach in a few bullet points, and note any migration or contract changes.",
+        "skills": [
+          "codegraph-query"
+        ],
+        "tools": []
+      },
+      {
+        "id": "implement",
+        "title": "Implementation",
+        "action": "ai-task",
+        "agent": "developer",
+        "model": "sonnet",
+        "description": "Write the minimum code that satisfies the acceptance criteria, reusing existing patterns and helpers rather than inventing new ones.",
+        "instruction": "Implement the feature following the design. Prefer existing utilities. Keep the diff focused; do not refactor unrelated code.",
+        "skills": [
+          "ponytail",
+          "codegraph-query"
+        ],
+        "tools": [],
+        "verify": "build"
+      },
+      {
+        "id": "tests",
+        "title": "Write tests",
+        "action": "ai-task",
+        "agent": "tester",
+        "model": "sonnet",
+        "description": "Cover the acceptance criteria and the tricky edge cases with automated tests so the behaviour is pinned down.",
+        "instruction": "Add unit and integration tests for the new behaviour, including the edge cases raised during clarification. Ensure they fail before the change and pass after.",
+        "skills": [
+          "test-authoring"
+        ],
+        "tools": [],
+        "verify": "tests"
+      },
+      {
+        "id": "self-review",
+        "title": "Self-review",
+        "action": "review",
+        "agent": "reviewer",
+        "model": "sonnet",
+        "description": "Read the diff as a reviewer would: correctness, naming, error handling at the boundaries, and anything that would draw a review comment.",
+        "instruction": "Review the diff for correctness and clarity. Fix obvious issues directly; list anything that needs a human decision.",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "pull-request",
+        "title": "Open the pull request",
+        "action": "generate-doc",
+        "agent": "developer",
+        "model": "haiku",
+        "description": "Summarise what changed and why, so a reviewer can approve quickly.",
+        "instruction": "Write a pull request description: what changed, why, how it was tested, and any follow-ups. Keep it concise.",
+        "skills": [],
+        "tools": []
+      }
+    ],
+    "levers": [
+      "codegraph",
+      "ponytail",
+      "routing",
+      "caveman"
+    ],
+    "guardrails": {
+      "maxRetries": 3,
+      "maxLoopDepth": 10,
+      "budget": {
+        "tokens": 3000000
+      },
+      "requireHumanGate": [
+        "clarify"
+      ]
+    },
+    "trust": "verified"
+  },
+  {
+    "name": "bug-fix",
+    "version": "0.1.0",
+    "title": "Bug Fix",
+    "description": "Diagnose a reported bug, fix the root cause, and add a regression test so it stays fixed. Best when you have a reproduction or a clear symptom.",
+    "roles": [
+      "developer"
+    ],
+    "tags": [
+      "engineering",
+      "debugging",
+      "regression"
+    ],
+    "triggers": [
+      "fix a bug",
+      "investigate an error",
+      "defect"
+    ],
+    "agents": [
+      "analyst",
+      "developer",
+      "tester",
+      "reviewer"
+    ],
+    "skills": [
+      "codegraph-query",
+      "test-authoring"
+    ],
+    "stages": [
+      {
+        "id": "reproduce",
+        "title": "Reproduce the problem",
+        "action": "ai-task",
+        "agent": "analyst",
+        "model": "sonnet",
+        "description": "Confirm the bug and capture the exact steps, inputs and environment that trigger it. A fix you can't reproduce is a guess.",
+        "instruction": "Establish a reliable reproduction: the steps, inputs, and expected vs actual behaviour. If it can't be reproduced, say what information is missing.",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "root-cause",
+        "title": "Find the root cause",
+        "action": "ai-task",
+        "agent": "developer",
+        "model": "opus",
+        "description": "Trace from the symptom to the underlying cause using the code graph, rather than patching the surface.",
+        "instruction": "Walk the call path from the symptom to the origin. Explain the root cause in one or two sentences and point to the exact location.",
+        "skills": [
+          "codegraph-query"
+        ],
+        "tools": []
+      },
+      {
+        "id": "fix",
+        "title": "Apply the fix",
+        "action": "ai-task",
+        "agent": "developer",
+        "model": "sonnet",
+        "description": "Make the smallest change that addresses the root cause without introducing new behaviour.",
+        "instruction": "Fix the root cause with a minimal, targeted change. Avoid unrelated refactors.",
+        "skills": [
+          "ponytail"
+        ],
+        "tools": [],
+        "verify": "build"
+      },
+      {
+        "id": "regression-test",
+        "title": "Add a regression test",
+        "action": "ai-task",
+        "agent": "tester",
+        "model": "sonnet",
+        "description": "Lock the fix in with a test that fails on the old code and passes on the new.",
+        "instruction": "Add a test that reproduces the original bug and now passes. Confirm it would have caught the regression.",
+        "skills": [
+          "test-authoring"
+        ],
+        "tools": [],
+        "verify": "tests"
+      },
+      {
+        "id": "verify",
+        "title": "Verify and summarise",
+        "action": "review",
+        "agent": "reviewer",
+        "model": "haiku",
+        "description": "Re-run the reproduction, confirm it's resolved, and write a short note of what was wrong and how it was fixed.",
+        "instruction": "Confirm the bug no longer reproduces and summarise the cause and the fix in a few lines.",
+        "skills": [],
+        "tools": []
+      }
+    ],
+    "levers": [
+      "codegraph",
+      "routing",
+      "caveman"
+    ],
+    "guardrails": {
+      "maxRetries": 3,
+      "maxLoopDepth": 8,
+      "budget": {
+        "tokens": 1500000
+      }
+    },
+    "trust": "verified"
+  },
+  {
+    "name": "screen-design",
+    "version": "0.1.0",
+    "title": "Screen Design",
+    "description": "Turn a product brief into a designed screen: research, wireframe, visual design, a clickable prototype, and a developer handoff. Best for designing a new page or flow.",
+    "roles": [
+      "designer"
+    ],
+    "tags": [
+      "ui",
+      "ux",
+      "product-design",
+      "handoff"
+    ],
+    "triggers": [
+      "design a screen",
+      "design a page",
+      "mockup"
+    ],
+    "agents": [
+      "researcher",
+      "designer",
+      "prototyper",
+      "reviewer"
+    ],
+    "skills": [
+      "requirement-analysis",
+      "doc-authoring"
+    ],
+    "stages": [
+      {
+        "id": "brief",
+        "title": "Understand the brief",
+        "action": "ai-task",
+        "agent": "researcher",
+        "model": "sonnet",
+        "description": "Clarify who the screen is for, the primary job it must do, and the constraints (brand, platform, accessibility) before sketching anything.",
+        "instruction": "Summarise the target user, the primary task, success criteria, and constraints. List any open questions for the product owner.",
+        "skills": [
+          "requirement-analysis"
+        ],
+        "tools": [],
+        "gate": "human-approve"
+      },
+      {
+        "id": "research",
+        "title": "Research references",
+        "action": "ai-task",
+        "agent": "researcher",
+        "model": "sonnet",
+        "description": "Gather patterns and prior art for this kind of screen so the design starts from proven solutions, not a blank page.",
+        "instruction": "Collect relevant UI patterns and examples for this screen type. Note what works, what to avoid, and which patterns fit our constraints.",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "wireframe",
+        "title": "Wireframe the layout",
+        "action": "ai-task",
+        "agent": "designer",
+        "model": "sonnet",
+        "description": "Lay out the structure and hierarchy — what goes where and why — without visual styling. Decisions about content and flow happen here.",
+        "instruction": "Describe a low-fidelity wireframe: the sections, their hierarchy, key components, and the primary and secondary actions.",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "visual",
+        "title": "Visual design",
+        "action": "generate-doc",
+        "agent": "designer",
+        "model": "sonnet",
+        "description": "Apply type, colour, spacing and components from the design system to make the wireframe real and on-brand.",
+        "instruction": "Turn the wireframe into a visual design spec: typography, colour, spacing, and the specific components to use. Keep it consistent with the design system.",
+        "skills": [
+          "doc-authoring"
+        ],
+        "tools": []
+      },
+      {
+        "id": "prototype",
+        "title": "Interactive prototype",
+        "action": "ai-task",
+        "agent": "prototyper",
+        "model": "sonnet",
+        "description": "Wire the key interactions so the flow can be clicked through and tested for real.",
+        "instruction": "Describe the interactive states and transitions for the primary flow so it can be prototyped and clicked through.",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "design-review",
+        "title": "Design review",
+        "action": "approval",
+        "agent": "reviewer",
+        "model": "sonnet",
+        "description": "Get sign-off on the design against the brief and accessibility before it goes to engineering.",
+        "instruction": "Review the design against the brief and accessibility guidelines. Approve, or list the changes needed.",
+        "skills": [],
+        "tools": [],
+        "gate": "human-approve"
+      },
+      {
+        "id": "handoff",
+        "title": "Developer handoff",
+        "action": "generate-doc",
+        "agent": "designer",
+        "model": "haiku",
+        "description": "Package the specs, assets and states so engineering can build it without guessing.",
+        "instruction": "Write a handoff note: components used, spacing and states, edge cases, and anything engineering needs to know.",
+        "skills": [
+          "doc-authoring"
+        ],
+        "tools": []
+      }
+    ],
+    "levers": [
+      "routing",
+      "disclosure",
+      "caveman"
+    ],
+    "guardrails": {
+      "qualityThreshold": "advisory",
+      "requireHumanGate": [
+        "brief",
+        "design-review"
+      ],
+      "budget": {
+        "tokens": 1500000
+      }
+    },
+    "trust": "verified"
+  },
+  {
+    "name": "ux-review",
+    "version": "0.1.0",
+    "title": "UX Review",
+    "description": "Evaluate an existing flow for usability problems and produce prioritised recommendations. Best for improving a screen or flow that already exists.",
+    "roles": [
+      "designer"
+    ],
+    "tags": [
+      "ux",
+      "usability",
+      "audit"
+    ],
+    "triggers": [
+      "usability review",
+      "ux audit",
+      "review a flow"
+    ],
+    "agents": [
+      "researcher",
+      "designer"
+    ],
+    "skills": [
+      "requirement-analysis"
+    ],
+    "stages": [
+      {
+        "id": "map-flow",
+        "title": "Map the flow",
+        "action": "ai-task",
+        "agent": "researcher",
+        "model": "sonnet",
+        "description": "Walk the flow step by step and document each screen, action and decision point so nothing is reviewed in isolation.",
+        "instruction": "Document the flow as a sequence of steps: each screen, the user's goal at that step, and the actions available.",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "heuristics",
+        "title": "Heuristic evaluation",
+        "action": "review",
+        "agent": "designer",
+        "model": "sonnet",
+        "description": "Assess each step against established usability heuristics (clarity, feedback, error prevention, consistency).",
+        "instruction": "Evaluate each step against usability heuristics. For each issue, note the heuristic violated and where it occurs.",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "prioritise",
+        "title": "Prioritise the issues",
+        "action": "transform",
+        "agent": "designer",
+        "model": "sonnet",
+        "description": "Rank the findings by user impact and effort so the team fixes the things that matter first.",
+        "instruction": "Rank the issues by severity and estimated effort. Group them into quick wins and larger changes.",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "recommend",
+        "title": "Recommendations",
+        "action": "generate-doc",
+        "agent": "designer",
+        "model": "haiku",
+        "description": "Turn findings into concrete, actionable recommendations the team can pick up.",
+        "instruction": "Write clear recommendations for the top issues: what to change and the expected improvement.",
+        "skills": [
+          "doc-authoring"
+        ],
+        "tools": []
+      }
+    ],
+    "levers": [
+      "routing",
+      "disclosure",
+      "caveman"
+    ],
+    "guardrails": {
+      "qualityThreshold": "advisory",
+      "budget": {
+        "tokens": 800000
+      }
+    },
+    "trust": "verified"
+  },
+  {
+    "name": "story-writing",
+    "version": "0.1.0",
+    "title": "Requirements to User Stories",
+    "description": "Turn a raw requirement or stakeholder ask into well-formed, prioritised user stories with acceptance criteria. Best for a BA or PO preparing a backlog.",
+    "roles": [
+      "ba-po"
+    ],
+    "tags": [
+      "backlog",
+      "user-stories",
+      "requirements"
+    ],
+    "triggers": [
+      "write user stories",
+      "break down a requirement",
+      "backlog"
+    ],
+    "agents": [
+      "analyst",
+      "writer",
+      "reviewer"
+    ],
+    "skills": [
+      "requirement-analysis",
+      "doc-authoring"
+    ],
+    "stages": [
+      {
+        "id": "gather",
+        "title": "Gather context",
+        "action": "ai-task",
+        "agent": "analyst",
+        "model": "sonnet",
+        "description": "Capture the goal, the users involved, and the business value before decomposing anything.",
+        "instruction": "Summarise the goal, the personas affected, and the business value. Note constraints and anything ambiguous.",
+        "skills": [
+          "requirement-analysis"
+        ],
+        "tools": []
+      },
+      {
+        "id": "analyse",
+        "title": "Analyse and slice",
+        "action": "transform",
+        "agent": "analyst",
+        "model": "opus",
+        "description": "Break the requirement into independent, valuable slices — each one a story a team could deliver on its own.",
+        "instruction": "Decompose the requirement into vertically sliced stories. Each slice should be independent, valuable, and small enough to deliver.",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "stories",
+        "title": "Draft the user stories",
+        "action": "generate-doc",
+        "agent": "writer",
+        "model": "sonnet",
+        "description": "Write each story in the As-a / I-want / So-that form so intent and value are explicit.",
+        "instruction": "Write each story as: As a <role>, I want <capability>, so that <benefit>. Keep them concise and outcome-focused.",
+        "skills": [
+          "doc-authoring"
+        ],
+        "tools": []
+      },
+      {
+        "id": "acceptance",
+        "title": "Acceptance criteria",
+        "action": "generate-doc",
+        "agent": "writer",
+        "model": "sonnet",
+        "description": "Define done for each story with testable Given/When/Then criteria the team and QA can rely on.",
+        "instruction": "For each story, write Given/When/Then acceptance criteria that are specific and testable.",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "prioritise",
+        "title": "Prioritise",
+        "action": "transform",
+        "agent": "analyst",
+        "model": "haiku",
+        "description": "Order the stories by value and dependency so the backlog reads top to bottom.",
+        "instruction": "Order the stories by value and dependencies. Note which are must-have for the first release.",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "review",
+        "title": "Stakeholder review",
+        "action": "approval",
+        "agent": "reviewer",
+        "model": "sonnet",
+        "description": "Confirm the stories reflect intent before they enter the backlog.",
+        "instruction": "Review the stories and acceptance criteria against the original ask. Approve, or list what to change.",
+        "skills": [],
+        "tools": [],
+        "gate": "human-approve"
+      }
+    ],
+    "levers": [
+      "routing",
+      "disclosure",
+      "caveman"
+    ],
+    "guardrails": {
+      "qualityThreshold": "advisory",
+      "requireHumanGate": [
+        "review"
+      ],
+      "budget": {
+        "tokens": 1000000
+      }
+    },
+    "trust": "verified"
+  },
+  {
+    "name": "prd-authoring",
+    "version": "0.1.0",
+    "title": "PRD Authoring",
+    "description": "Draft a clear product requirements document from a problem statement: goals, scope, flows and requirements. Best for a PO framing a new initiative.",
+    "roles": [
+      "ba-po"
+    ],
+    "tags": [
+      "prd",
+      "product",
+      "documentation"
+    ],
+    "triggers": [
+      "write a prd",
+      "product requirements",
+      "spec a feature"
+    ],
+    "agents": [
+      "analyst",
+      "writer",
+      "reviewer"
+    ],
+    "skills": [
+      "requirement-analysis",
+      "doc-authoring"
+    ],
+    "stages": [
+      {
+        "id": "problem",
+        "title": "Frame the problem",
+        "action": "ai-task",
+        "agent": "analyst",
+        "model": "opus",
+        "description": "State the problem, who has it, and why it matters now — the foundation the whole document rests on.",
+        "instruction": "Write a sharp problem statement: who is affected, the pain, and why solving it now matters.",
+        "skills": [
+          "requirement-analysis"
+        ],
+        "tools": []
+      },
+      {
+        "id": "goals",
+        "title": "Goals and metrics",
+        "action": "generate-doc",
+        "agent": "writer",
+        "model": "sonnet",
+        "description": "Define what success looks like with measurable outcomes, not features.",
+        "instruction": "Define the goals and the metrics that will show success. Keep them measurable and outcome-oriented.",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "scope",
+        "title": "Scope",
+        "action": "generate-doc",
+        "agent": "writer",
+        "model": "sonnet",
+        "description": "Draw a clear line around what's in and what's explicitly out for this release.",
+        "instruction": "List what is in scope and, just as important, what is out of scope for this release.",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "flows",
+        "title": "User flows",
+        "action": "generate-doc",
+        "agent": "writer",
+        "model": "sonnet",
+        "description": "Describe the key journeys the product must support so requirements have context.",
+        "instruction": "Describe the primary user flows step by step, including the main alternative paths.",
+        "skills": [
+          "doc-authoring"
+        ],
+        "tools": []
+      },
+      {
+        "id": "requirements",
+        "title": "Requirements",
+        "action": "generate-doc",
+        "agent": "writer",
+        "model": "sonnet",
+        "description": "Enumerate the functional and non-functional requirements the flows imply.",
+        "instruction": "List functional and non-functional requirements derived from the flows. Make each one testable.",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "review",
+        "title": "Review",
+        "action": "approval",
+        "agent": "reviewer",
+        "model": "sonnet",
+        "description": "Check the document is complete and coherent before circulating it.",
+        "instruction": "Review the PRD for completeness and internal consistency. Approve, or list gaps to fill.",
+        "skills": [],
+        "tools": [],
+        "gate": "human-approve"
+      }
+    ],
+    "levers": [
+      "routing",
+      "disclosure",
+      "caveman"
+    ],
+    "guardrails": {
+      "qualityThreshold": "advisory",
+      "requireHumanGate": [
+        "review"
+      ],
+      "budget": {
+        "tokens": 1200000
+      }
+    },
+    "trust": "verified"
+  },
+  {
+    "name": "test-planning",
+    "version": "0.1.0",
+    "title": "Test Planning",
+    "description": "Build a structured test plan from a requirement: scenarios, cases, data and a results report. Best for QA preparing coverage for a feature.",
+    "roles": [
+      "qa"
+    ],
+    "tags": [
+      "testing",
+      "test-plan",
+      "coverage"
+    ],
+    "triggers": [
+      "write a test plan",
+      "test cases",
+      "qa coverage"
+    ],
+    "agents": [
+      "analyst",
+      "tester",
+      "reviewer"
+    ],
+    "skills": [
+      "requirement-analysis",
+      "test-authoring"
+    ],
+    "stages": [
+      {
+        "id": "analyse",
+        "title": "Analyse requirements",
+        "action": "ai-task",
+        "agent": "analyst",
+        "model": "sonnet",
+        "description": "Read the requirement and acceptance criteria and pull out everything that must be verified, including the unhappy paths.",
+        "instruction": "Extract the behaviours to verify from the requirement and acceptance criteria. List happy paths, edge cases, and error paths.",
+        "skills": [
+          "requirement-analysis"
+        ],
+        "tools": []
+      },
+      {
+        "id": "scenarios",
+        "title": "Identify test scenarios",
+        "action": "transform",
+        "agent": "tester",
+        "model": "sonnet",
+        "description": "Group the behaviours into scenarios so coverage is organised and nothing is missed.",
+        "instruction": "Organise the behaviours into test scenarios grouped by area. Ensure each acceptance criterion is covered.",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "cases",
+        "title": "Write test cases",
+        "action": "generate-doc",
+        "agent": "tester",
+        "model": "sonnet",
+        "description": "Write concrete, repeatable cases with steps and expected results for each scenario.",
+        "instruction": "For each scenario, write test cases: preconditions, steps, expected result. Keep them concrete and repeatable.",
+        "skills": [
+          "test-authoring"
+        ],
+        "tools": []
+      },
+      {
+        "id": "data",
+        "title": "Define test data",
+        "action": "generate-doc",
+        "agent": "tester",
+        "model": "haiku",
+        "description": "Specify the inputs and fixtures each case needs so tests are reproducible.",
+        "instruction": "List the test data and fixtures each case requires, including boundary and invalid values.",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "execute",
+        "title": "Execute",
+        "action": "ai-task",
+        "agent": "tester",
+        "model": "sonnet",
+        "description": "Run the cases (or drive automation) and record pass/fail against each.",
+        "instruction": "Execute the test cases and record the outcome of each with any observations.",
+        "skills": [],
+        "tools": [],
+        "verify": "tests"
+      },
+      {
+        "id": "report",
+        "title": "Report results",
+        "action": "generate-doc",
+        "agent": "reviewer",
+        "model": "haiku",
+        "description": "Summarise coverage, pass rate and any defects for the team.",
+        "instruction": "Write a results report: what was covered, pass/fail summary, and any defects found with severity.",
+        "skills": [
+          "doc-authoring"
+        ],
+        "tools": []
+      }
+    ],
+    "levers": [
+      "routing",
+      "disclosure",
+      "caveman"
+    ],
+    "guardrails": {
+      "qualityThreshold": "advisory",
+      "budget": {
+        "tokens": 1200000
+      }
+    },
+    "trust": "verified"
+  },
+  {
+    "name": "bug-triage",
+    "version": "0.1.0",
+    "title": "Bug Triage",
+    "description": "Take an incoming bug report, reproduce it, classify it, and write a clean, actionable report for engineering. Best for QA processing incoming defects.",
+    "roles": [
+      "qa"
+    ],
+    "tags": [
+      "testing",
+      "triage",
+      "defect"
+    ],
+    "triggers": [
+      "triage a bug",
+      "process a defect",
+      "bug report"
+    ],
+    "agents": [
+      "analyst",
+      "tester"
+    ],
+    "skills": [
+      "requirement-analysis"
+    ],
+    "stages": [
+      {
+        "id": "reproduce",
+        "title": "Reproduce",
+        "action": "ai-task",
+        "agent": "tester",
+        "model": "sonnet",
+        "description": "Confirm the report and capture exact, minimal steps to reproduce. Unreproducible reports go back with questions.",
+        "instruction": "Reproduce the reported issue and capture the minimal steps, environment, and actual vs expected behaviour. If it can't be reproduced, list what's missing.",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "classify",
+        "title": "Classify severity",
+        "action": "transform",
+        "agent": "analyst",
+        "model": "sonnet",
+        "description": "Assess impact and frequency to assign a severity and priority the team can trust.",
+        "instruction": "Assign a severity and priority based on user impact and frequency. Justify the rating in one line.",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "root-hint",
+        "title": "Root-cause hint",
+        "action": "ai-task",
+        "agent": "analyst",
+        "model": "sonnet",
+        "description": "Point engineering in the right direction with the likely area or component involved.",
+        "instruction": "Suggest the likely area or component involved and any evidence, to shorten the developer's investigation.",
+        "skills": [],
+        "tools": []
+      },
+      {
+        "id": "report",
+        "title": "Write the bug report",
+        "action": "generate-doc",
+        "agent": "tester",
+        "model": "haiku",
+        "description": "Produce a clean report: title, steps, expected vs actual, severity, and the root-cause hint.",
+        "instruction": "Write a clear bug report: concise title, steps to reproduce, expected vs actual, severity, environment, and the root-cause hint.",
+        "skills": [
+          "doc-authoring"
+        ],
+        "tools": []
+      }
+    ],
+    "levers": [
+      "routing",
+      "disclosure",
+      "caveman"
+    ],
+    "guardrails": {
+      "qualityThreshold": "advisory",
+      "budget": {
+        "tokens": 600000
+      }
+    },
+    "trust": "verified"
+  }
+]

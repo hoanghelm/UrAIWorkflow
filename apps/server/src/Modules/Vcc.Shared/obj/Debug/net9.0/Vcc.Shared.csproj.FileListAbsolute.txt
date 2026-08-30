@@ -1,0 +1,13 @@
+D:\tools\VCC-Workflow\apps\server\src\Modules\Vcc.Shared\bin\Debug\net9.0\Vcc.Shared.deps.json
+D:\tools\VCC-Workflow\apps\server\src\Modules\Vcc.Shared\bin\Debug\net9.0\Vcc.Shared.dll
+D:\tools\VCC-Workflow\apps\server\src\Modules\Vcc.Shared\bin\Debug\net9.0\Vcc.Shared.pdb
+D:\tools\VCC-Workflow\apps\server\src\Modules\Vcc.Shared\obj\Debug\net9.0\Vcc.Shared.csproj.AssemblyReference.cache
+D:\tools\VCC-Workflow\apps\server\src\Modules\Vcc.Shared\obj\Debug\net9.0\Vcc.Shared.GeneratedMSBuildEditorConfig.editorconfig
+D:\tools\VCC-Workflow\apps\server\src\Modules\Vcc.Shared\obj\Debug\net9.0\Vcc.Shared.AssemblyInfoInputs.cache
+D:\tools\VCC-Workflow\apps\server\src\Modules\Vcc.Shared\obj\Debug\net9.0\Vcc.Shared.AssemblyInfo.cs
+D:\tools\VCC-Workflow\apps\server\src\Modules\Vcc.Shared\obj\Debug\net9.0\Vcc.Shared.csproj.CoreCompileInputs.cache
+D:\tools\VCC-Workflow\apps\server\src\Modules\Vcc.Shared\obj\Debug\net9.0\Vcc.Shared.sourcelink.json
+D:\tools\VCC-Workflow\apps\server\src\Modules\Vcc.Shared\obj\Debug\net9.0\Vcc.Shared.dll
+D:\tools\VCC-Workflow\apps\server\src\Modules\Vcc.Shared\obj\Debug\net9.0\refint\Vcc.Shared.dll
+D:\tools\VCC-Workflow\apps\server\src\Modules\Vcc.Shared\obj\Debug\net9.0\Vcc.Shared.pdb
+D:\tools\VCC-Workflow\apps\server\src\Modules\Vcc.Shared\obj\Debug\net9.0\ref\Vcc.Shared.dll

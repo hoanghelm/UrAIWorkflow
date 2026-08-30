@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "1eHhLS3gfUw=",
+  "success": true,
+  "projectFilePath": "D:\\tools\\VCC-Workflow\\apps\\server\\src\\Modules\\Vcc.Shared\\Vcc.Shared.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\hoang\\.nuget\\packages\\microsoft.extensions.dependencyinjection.abstractions\\9.0.1\\microsoft.extensions.dependencyinjection.abstractions.9.0.1.nupkg.sha512"
+  ],
+  "logs": []
+}

@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\Vcc.Shared\Vcc.Shared.csproj" />
+    <ProjectReference Include="..\Vcc.Domain\Vcc.Domain.csproj" />
+    <ProjectReference Include="..\Vcc.Infrastructure\Vcc.Infrastructure.csproj" />
+    <ProjectReference Include="..\Vcc.Orchestration\Vcc.Orchestration.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

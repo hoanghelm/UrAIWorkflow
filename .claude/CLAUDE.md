@@ -24,3 +24,5 @@ Local-first, token-efficient AI workflow platform. Monorepo: NestJS API (`apps/a
 **Tools**: `.claude/rules/tools.md` — CodeGraph (MCP), Ponytail, Caveman.
 
 **Area rules**: `.claude/rules/backend.md`, `frontend.md`, `schema.md`, `tools.md`.
+
+**Backend is migrating to .NET 9** (`apps/server`, `Vcc.*` modules). For any new backend work read `docs/backend-dotnet-architecture.md` and `.claude/rules/backend-dotnet.md`. Skills: `dotnet-module`, `ef-model`, `dotnet-endpoint`, `connector-adapter`. Agents: `backend-dotnet-engineer`, `infrastructure-expert`. The NestJS `apps/api` stays live until cutover.
