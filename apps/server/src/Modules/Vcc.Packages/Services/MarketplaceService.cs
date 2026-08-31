@@ -8,7 +8,7 @@ using Vcc.Packages.Contracts;
 
 namespace Vcc.Packages.Services;
 
-public sealed class MarketplaceService(IPackageDbContext db, IProjectDbContext projects, IBundleStore store) : IMarketplaceService
+public sealed class MarketplaceService(IPackageDbContext db, IProjectDbContext projects, IBundleStore store, IBundleFetcher fetcher) : IMarketplaceService
 {
     private const string MarketplaceScope = "project";
     private const string MarketplaceSource = "marketplace";
@@ -50,14 +50,33 @@ public sealed class MarketplaceService(IPackageDbContext db, IProjectDbContext p
     public async Task<IReadOnlyList<MarketplaceItemDto>> ListAsync(CancellationToken ct)
     {
         var bundles = await db.Bundles.OrderByDescending(b => b.Stars).ToListAsync(ct);
-        return bundles.Select(b =>
+        return bundles.Select(b => ToItem(b, ParseMeta(b.Meta))).ToList();
+    }
+
+    public async Task<MarketplaceItemDto?> ImportAsync(string source, string kind, string? name, CancellationToken ct)
+    {
+        var resolvedName = string.IsNullOrWhiteSpace(name) ? DeriveName(source) : name!;
+        var files = await fetcher.FetchAsync(kind, resolvedName, source, ct);
+        if (files.Count == 0) return null;
+
+        var id = $"{kind}-{resolvedName}";
+        var archiveFile = $"{id}.tar.gz";
+        var entries = await store.WriteArchiveAsync(archiveFile, files, ct);
+        var meta = new BundleMeta([], entries, null);
+
+        var bundle = await db.Bundles.FirstOrDefaultAsync(b => b.Id == id, ct);
+        if (bundle is null)
         {
-            var meta = ParseMeta(b.Meta);
-            var content = ContentFor(b, meta);
-            return new MarketplaceItemDto(
-                b.Id, b.Kind, b.Name, b.Description, b.Author, PackJson.ParseStringList(b.Tags),
-                b.Stars, b.Source, b.Name, meta.Members, content);
-        }).ToList();
+            bundle = new Bundle { Id = id, Kind = kind, Name = resolvedName };
+            db.Bundles.Add(bundle);
+        }
+        bundle.Kind = kind; bundle.Name = resolvedName; bundle.Source = source;
+        bundle.Description = string.IsNullOrEmpty(bundle.Description) ? $"Imported from {source}" : bundle.Description;
+        bundle.Author = string.IsNullOrEmpty(bundle.Author) ? DeriveOwner(source) : bundle.Author;
+        bundle.Archive = archiveFile;
+        bundle.Meta = JsonSerializer.Serialize(meta, Json);
+        await db.SaveChangesAsync(ct);
+        return ToItem(bundle, meta);
     }
 
     public async Task<IReadOnlyList<string>> InstallAsync(string projectId, string[] ids, CancellationToken ct)
@@ -93,6 +112,9 @@ public sealed class MarketplaceService(IPackageDbContext db, IProjectDbContext p
                 continue;
             }
 
+            if (string.IsNullOrEmpty(bundle.Archive) && !string.IsNullOrEmpty(bundle.Source))
+                await MaterializeAsync(bundle, meta, ct);
+
             if (!string.IsNullOrEmpty(bundle.Archive) && store.ExtractInto(bundle.Archive, project.Root))
             {
                 await RecordCatalogItemAsync(projectId, bundle, ct);
@@ -102,6 +124,16 @@ public sealed class MarketplaceService(IPackageDbContext db, IProjectDbContext p
 
         await db.SaveChangesAsync(ct);
         return installed;
+    }
+
+    private async Task MaterializeAsync(Bundle bundle, BundleMeta meta, CancellationToken ct)
+    {
+        var files = await fetcher.FetchAsync(bundle.Kind, bundle.Name, bundle.Source, ct);
+        if (files.Count == 0) return;
+        var archiveFile = $"{bundle.Id}.tar.gz";
+        var entries = await store.WriteArchiveAsync(archiveFile, files, ct);
+        bundle.Archive = archiveFile;
+        bundle.Meta = JsonSerializer.Serialize(meta with { Entries = entries }, Json);
     }
 
     private async Task RecordCatalogItemAsync(string projectId, Bundle bundle, CancellationToken ct)
@@ -114,6 +146,10 @@ public sealed class MarketplaceService(IPackageDbContext db, IProjectDbContext p
             ProjectId = projectId, Meta = JsonSerializer.Serialize(new { bundle.Author, bundle.Source }, Json),
         });
     }
+
+    private MarketplaceItemDto ToItem(Bundle bundle, BundleMeta meta)
+        => new(bundle.Id, bundle.Kind, bundle.Name, bundle.Description, bundle.Author, PackJson.ParseStringList(bundle.Tags),
+            bundle.Stars, bundle.Source, bundle.Name, meta.Members, ContentFor(bundle, meta));
 
     private string ContentFor(Bundle bundle, BundleMeta meta)
     {
@@ -158,6 +194,19 @@ public sealed class MarketplaceService(IPackageDbContext db, IProjectDbContext p
 
         Directory.CreateDirectory(Path.GetDirectoryName(file)!);
         File.WriteAllText(file, JsonSerializer.Serialize(merged, new JsonSerializerOptions(Json) { WriteIndented = true }));
+    }
+
+    private static string DeriveName(string source)
+    {
+        var trimmed = source.TrimEnd('/');
+        var leaf = trimmed[(trimmed.LastIndexOf('/') + 1)..];
+        return leaf.Replace(".git", "").Length > 0 ? leaf.Replace(".git", "") : "package";
+    }
+
+    private static string DeriveOwner(string source)
+    {
+        var m = System.Text.RegularExpressions.Regex.Match(source, @"github\.com/([^/#?]+)/", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+        return m.Success ? m.Groups[1].Value : "";
     }
 
     private static BundleMeta ParseMeta(string json)

@@ -663,5 +663,280 @@
       ".claude/plugins/claude-flow/.claude-plugin/scripts/uninstall.sh",
       ".claude/plugins/claude-flow/.claude-plugin/scripts/verify.sh"
     ]
+  },
+  {
+    "id": "mcp-memory",
+    "kind": "mcp",
+    "name": "memory",
+    "description": "Knowledge-graph persistent memory across sessions.",
+    "author": "modelcontextprotocol",
+    "tags": [
+      "mcp"
+    ],
+    "stars": 0,
+    "source": "https://github.com/modelcontextprotocol/servers",
+    "mcp": {
+      "name": "memory",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ]
+    }
+  },
+  {
+    "id": "mcp-sequential-thinking",
+    "kind": "mcp",
+    "name": "sequential-thinking",
+    "description": "Dynamic, reflective problem-solving through thought sequences.",
+    "author": "modelcontextprotocol",
+    "tags": [
+      "mcp"
+    ],
+    "stars": 0,
+    "source": "https://github.com/modelcontextprotocol/servers",
+    "mcp": {
+      "name": "sequential-thinking",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequentialthinking"
+      ]
+    }
+  },
+  {
+    "id": "mcp-fetch",
+    "kind": "mcp",
+    "name": "fetch",
+    "description": "Fetch web content and convert it for efficient LLM use.",
+    "author": "modelcontextprotocol",
+    "tags": [
+      "mcp"
+    ],
+    "stars": 0,
+    "source": "https://github.com/modelcontextprotocol/servers",
+    "mcp": {
+      "name": "fetch",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-fetch"
+      ]
+    }
+  },
+  {
+    "id": "mcp-git",
+    "kind": "mcp",
+    "name": "git",
+    "description": "Read, search, and manipulate Git repositories.",
+    "author": "modelcontextprotocol",
+    "tags": [
+      "mcp"
+    ],
+    "stars": 0,
+    "source": "https://github.com/modelcontextprotocol/servers",
+    "mcp": {
+      "name": "git",
+      "command": "uvx",
+      "args": [
+        "mcp-server-git"
+      ]
+    }
+  },
+  {
+    "id": "mcp-time",
+    "kind": "mcp",
+    "name": "time",
+    "description": "Time and timezone conversion capabilities.",
+    "author": "modelcontextprotocol",
+    "tags": [
+      "mcp"
+    ],
+    "stars": 0,
+    "source": "https://github.com/modelcontextprotocol/servers",
+    "mcp": {
+      "name": "time",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-time"
+      ]
+    }
+  },
+  {
+    "id": "mcp-everything",
+    "kind": "mcp",
+    "name": "everything",
+    "description": "Reference server exercising prompts, resources, and tools.",
+    "author": "modelcontextprotocol",
+    "tags": [
+      "mcp"
+    ],
+    "stars": 0,
+    "source": "https://github.com/modelcontextprotocol/servers",
+    "mcp": {
+      "name": "everything",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-everything"
+      ]
+    }
+  },
+  {
+    "id": "skill-skill-creator",
+    "kind": "skill",
+    "name": "skill-creator",
+    "description": "Scaffold and author new Claude skills.",
+    "author": "anthropic",
+    "tags": [
+      "anthropic",
+      "official"
+    ],
+    "stars": 0,
+    "source": "https://github.com/anthropics/skills/tree/main/skills/skill-creator"
+  },
+  {
+    "id": "skill-mcp-builder",
+    "kind": "skill",
+    "name": "mcp-builder",
+    "description": "Build Model Context Protocol (MCP) servers.",
+    "author": "anthropic",
+    "tags": [
+      "anthropic",
+      "official"
+    ],
+    "stars": 0,
+    "source": "https://github.com/anthropics/skills/tree/main/skills/mcp-builder"
+  },
+  {
+    "id": "skill-frontend-design",
+    "kind": "skill",
+    "name": "frontend-design",
+    "description": "Build distinctive, production-grade frontend interfaces.",
+    "author": "anthropic",
+    "tags": [
+      "anthropic",
+      "official"
+    ],
+    "stars": 0,
+    "source": "https://github.com/anthropics/skills/tree/main/skills/frontend-design"
+  },
+  {
+    "id": "skill-canvas-design",
+    "kind": "skill",
+    "name": "canvas-design",
+    "description": "Design multi-artboard visual canvases.",
+    "author": "anthropic",
+    "tags": [
+      "anthropic",
+      "official"
+    ],
+    "stars": 0,
+    "source": "https://github.com/anthropics/skills/tree/main/skills/canvas-design"
+  },
+  {
+    "id": "skill-algorithmic-art",
+    "kind": "skill",
+    "name": "algorithmic-art",
+    "description": "Generate algorithmic and generative art.",
+    "author": "anthropic",
+    "tags": [
+      "anthropic",
+      "official"
+    ],
+    "stars": 0,
+    "source": "https://github.com/anthropics/skills/tree/main/skills/algorithmic-art"
+  },
+  {
+    "id": "skill-brand-guidelines",
+    "kind": "skill",
+    "name": "brand-guidelines",
+    "description": "Apply brand colors, typography, and voice to output.",
+    "author": "anthropic",
+    "tags": [
+      "anthropic",
+      "official"
+    ],
+    "stars": 0,
+    "source": "https://github.com/anthropics/skills/tree/main/skills/brand-guidelines"
+  },
+  {
+    "id": "skill-claude-api",
+    "kind": "skill",
+    "name": "claude-api",
+    "description": "Reference for the Claude API - models, params, SDK.",
+    "author": "anthropic",
+    "tags": [
+      "anthropic",
+      "official"
+    ],
+    "stars": 0,
+    "source": "https://github.com/anthropics/skills/tree/main/skills/claude-api"
+  },
+  {
+    "id": "skill-docx",
+    "kind": "skill",
+    "name": "docx",
+    "description": "Create and edit Word (.docx) documents.",
+    "author": "anthropic",
+    "tags": [
+      "anthropic",
+      "official"
+    ],
+    "stars": 0,
+    "source": "https://github.com/anthropics/skills/tree/main/skills/docx"
+  },
+  {
+    "id": "skill-pdf",
+    "kind": "skill",
+    "name": "pdf",
+    "description": "Create, fill, and extract PDF documents.",
+    "author": "anthropic",
+    "tags": [
+      "anthropic",
+      "official"
+    ],
+    "stars": 0,
+    "source": "https://github.com/anthropics/skills/tree/main/skills/pdf"
+  },
+  {
+    "id": "skill-pptx",
+    "kind": "skill",
+    "name": "pptx",
+    "description": "Create and edit PowerPoint (.pptx) presentations.",
+    "author": "anthropic",
+    "tags": [
+      "anthropic",
+      "official"
+    ],
+    "stars": 0,
+    "source": "https://github.com/anthropics/skills/tree/main/skills/pptx"
+  },
+  {
+    "id": "skill-doc-coauthoring",
+    "kind": "skill",
+    "name": "doc-coauthoring",
+    "description": "Collaboratively draft and edit documents.",
+    "author": "anthropic",
+    "tags": [
+      "anthropic",
+      "official"
+    ],
+    "stars": 0,
+    "source": "https://github.com/anthropics/skills/tree/main/skills/doc-coauthoring"
+  },
+  {
+    "id": "skill-internal-comms",
+    "kind": "skill",
+    "name": "internal-comms",
+    "description": "Write internal communications and announcements.",
+    "author": "anthropic",
+    "tags": [
+      "anthropic",
+      "official"
+    ],
+    "stars": 0,
+    "source": "https://github.com/anthropics/skills/tree/main/skills/internal-comms"
   }
 ]
