@@ -67,6 +67,7 @@ await app.Services.GetRequiredService<MigrationOrchestrator>().RunAsync();
 using (var scope = app.Services.CreateScope())
 {
     await scope.ServiceProvider.GetRequiredService<Vcc.Packages.Services.IPackService>().SeedAsync(CancellationToken.None);
+    await scope.ServiceProvider.GetRequiredService<Vcc.Packages.Services.IMarketplaceService>().SeedAsync(CancellationToken.None);
 }
 
 app.Run();

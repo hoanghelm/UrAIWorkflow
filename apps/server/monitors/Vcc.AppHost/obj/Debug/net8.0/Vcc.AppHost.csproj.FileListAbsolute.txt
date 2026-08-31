@@ -1,8 +1,0 @@
-D:\tools\VCC-Workflow\apps\server\monitors\Vcc.AppHost\obj\Debug\net8.0\Vcc.AppHost.csproj.AssemblyReference.cache
-D:\tools\VCC-Workflow\apps\server\monitors\Vcc.AppHost\obj\Debug\net8.0\Vcc.AppHost.GeneratedMSBuildEditorConfig.editorconfig
-D:\tools\VCC-Workflow\apps\server\monitors\Vcc.AppHost\obj\Debug\net8.0\Vcc.AppHost.AssemblyInfoInputs.cache
-D:\tools\VCC-Workflow\apps\server\monitors\Vcc.AppHost\obj\Debug\net8.0\Vcc.AppHost.AssemblyInfo.cs
-D:\tools\VCC-Workflow\apps\server\monitors\Vcc.AppHost\obj\Debug\net8.0\Vcc.AppHost.csproj.CoreCompileInputs.cache
-D:\tools\VCC-Workflow\apps\server\monitors\Vcc.AppHost\obj\Debug\net8.0\Aspire\references\.ProjectMetadata.g.cs
-D:\tools\VCC-Workflow\apps\server\monitors\Vcc.AppHost\obj\Debug\net8.0\Aspire\references\_AppHost.ProjectMetadata.g.cs
-D:\tools\VCC-Workflow\apps\server\monitors\Vcc.AppHost\obj\Debug\net8.0\Vcc.AppHost.sourcelink.json

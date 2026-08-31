@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <Content Update="data\**\*" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="data\bundles\*.tar.gz" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

@@ -9,6 +9,15 @@ build/
 coverage/
 *.tsbuildinfo
 
+# .NET build output
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+.vs/
+TestResults/
+*.nupkg
+
 # Logs
 *.log
 npm-debug.log*
