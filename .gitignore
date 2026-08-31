@@ -38,8 +38,6 @@ secrets.json
 *.db-shm
 *.sqlite
 *.sqlite3
-apps/api/prisma/data/
-apps/api/data/
 
 # Runtime state (worktrees, previews, artifact bundles, harness)
 .harness/
@@ -49,9 +47,9 @@ worktrees/
 # Generated example apps produced by runs
 examples/
 
-# Local Claude harness settings (keep shared .claude config, drop local overrides)
+# Claude harness — kept locally on disk, not published to GitHub
+.claude/
 **/settings.local.json
-.claude/settings.local.json
 
 # Editor / OS
 .vscode/
