@@ -30,12 +30,12 @@ public sealed class CopilotAgentConnector(HttpClient http) : IAgentConnector
             req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", copilotToken);
             req.Headers.TryAddWithoutValidation("Editor-Version", "vscode/1.90.0");
             req.Headers.TryAddWithoutValidation("Copilot-Integration-Id", "vscode-chat");
-            req.Content = JsonContent.Create(new
-            {
-                model,
-                messages = new[] { new { role = "user", content = request.Prompt } },
-                stream = false,
-            });
+            var messages = request.System
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Select(s => new { role = "system", content = s })
+                .Append(new { role = "user", content = request.Prompt })
+                .ToArray();
+            req.Content = JsonContent.Create(new { model, messages, stream = false });
 
             using var resp = await http.SendAsync(req, ct);
             var body = await resp.Content.ReadFromJsonAsync<JsonElement>(Json, ct);

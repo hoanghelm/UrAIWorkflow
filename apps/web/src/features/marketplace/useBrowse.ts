@@ -8,9 +8,9 @@ export type Category = "all" | "template" | "skill" | "agent" | "command" | "hoo
 
 export function useBrowse(category: Category) {
   const dispatch = useAppDispatch();
-  const { data: list = [], isLoading } = useMarketplaceQuery();
-  const selected = useAppSelector((s) => s.marketplace.selected);
   const currentId = useAppSelector((s) => s.projects.currentId);
+  const { data: list = [], isLoading } = useMarketplaceQuery(currentId);
+  const selected = useAppSelector((s) => s.marketplace.selected);
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState<"popular" | "name">("popular");
   const [installing, setInstalling] = useState(false);
@@ -55,6 +55,9 @@ export function useBrowse(category: Category) {
     dispatch.marketplace.clearSelected();
     void dispatch.catalog.load(currentId);
     notify.success(`Added ${res.installed.length} to the project`);
+    if (res.failed?.length) {
+      notify.error(res.failed.map((f) => `${f.id}: ${f.reason}`).join("; "));
+    }
   };
 
   return {

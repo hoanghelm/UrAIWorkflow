@@ -13,7 +13,8 @@ public sealed record WorkflowDef(string Name, IReadOnlyList<StageDef> Stages, Gu
 public sealed record ExecutionState(
     string Requirement, string Model, string ProjectRoot,
     int StageIndex, string Context, List<int> ApprovedGates, int Tokens,
-    int LoopCount = 0, List<string>? Answers = null);
+    int LoopCount = 0, List<string>? Answers = null, string Persona = "generalist", string ProjectId = "",
+    string Snapshot = "");
 
 public static class WorkflowParser
 {

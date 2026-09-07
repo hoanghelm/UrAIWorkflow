@@ -21,4 +21,5 @@ public interface IDesignService
 
     DesignPreviewResult GeneratePreview(GeneratePreviewInput input);
     IReadOnlyList<object> Workflows();
+    IReadOnlyList<object> TestWorkflows();
 }

@@ -10,5 +10,9 @@ public sealed record ProjectPackSummaryDto(
     string? InstalledVersion, string LatestVersion, bool UpdateAvailable);
 
 public sealed record MarketplaceItemDto(
-    string Id, string Kind, string Name, string Description, string Author, IReadOnlyList<string> Tags,
-    int Stars, string Source, string Install, IReadOnlyList<string> Bundle, string Content);
+    string Id, string Kind, string Name, string Version, IReadOnlyList<string> Versions,
+    string Description, string Author, IReadOnlyList<string> Tags, int Stars, string Source,
+    string Install, IReadOnlyList<string> Bundle, string Content,
+    string? InstalledVersion, bool Pinned, bool UpdateAvailable);
+
+public sealed record MarketplaceQuery(string? Q, string? Kind, string? Tag, string? ProjectId, int Limit, int Offset);

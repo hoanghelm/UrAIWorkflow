@@ -1375,5 +1375,688 @@
       }
     },
     "trust": "verified"
+  },
+  {
+    "name": "nodejs-service",
+    "title": "Node.js Service Feature",
+    "description": "Implement or change a feature in a Node.js/TypeScript backend (Express, NestJS, Fastify), with build + tests.",
+    "roles": [
+      "developer"
+    ],
+    "tags": [
+      "nodejs",
+      "backend",
+      "javascript",
+      "typescript"
+    ],
+    "triggers": [
+      "node feature",
+      "express endpoint",
+      "nest module",
+      "node service"
+    ],
+    "agents": [
+      "analyst",
+      "developer",
+      "tester",
+      "reviewer"
+    ],
+    "skills": [
+      "requirement-analysis",
+      "ponytail",
+      "test-authoring",
+      "code-review"
+    ],
+    "stages": [
+      {
+        "id": "plan",
+        "title": "Plan",
+        "agent": "analyst",
+        "model": "opus",
+        "skills": [
+          "requirement-analysis",
+          "codegraph-query",
+          "ponytail"
+        ],
+        "tools": [],
+        "instruction": "First detect THIS workspace stack and conventions from CLAUDE.md, .claude/rules, and existing files. Match them exactly; reuse existing utilities and patterns. Be token-efficient. Break the requirement into a concrete, ordered implementation plan: files to add/change, key functions/types, edge cases, and how it will be verified. Do not write code yet."
+      },
+      {
+        "id": "implement",
+        "title": "Implement",
+        "agent": "developer",
+        "model": "sonnet",
+        "skills": [
+          "ponytail"
+        ],
+        "tools": [],
+        "instruction": "First detect THIS workspace stack and conventions from CLAUDE.md, .claude/rules, and existing files. Match them exactly; reuse existing utilities and patterns. Be token-efficient. Implement the plan in the Node.js codebase. Follow the project's module/router/service layout and TypeScript config. Run the build and fix type/compile errors.",
+        "verify": "build"
+      },
+      {
+        "id": "test",
+        "title": "Test",
+        "agent": "tester",
+        "model": "sonnet",
+        "skills": [
+          "test-authoring"
+        ],
+        "tools": [],
+        "instruction": "Add or update unit/integration tests (Jest/Vitest/node:test as the project uses) covering the new behavior and edge cases, then run the test suite.",
+        "verify": "tests"
+      },
+      {
+        "id": "review",
+        "title": "Review",
+        "agent": "reviewer",
+        "model": "sonnet",
+        "skills": [
+          "code-review"
+        ],
+        "tools": [],
+        "instruction": "Review the changes against the requirement and workspace conventions: correctness, convention compliance, error handling, and tests. List high-confidence issues with concrete fixes and a final verdict as JSON {\"passed\":bool,\"issues\":[]}."
+      }
+    ],
+    "levers": [
+      "codegraph",
+      "ponytail",
+      "routing",
+      "caveman"
+    ],
+    "guardrails": {
+      "maxRetries": 2,
+      "maxLoopDepth": 6,
+      "budget": {
+        "tokens": 2000000
+      },
+      "stageTimeoutMs": 600000,
+      "qualityThreshold": "verifier-must-pass",
+      "onBreach": "pause",
+      "requireHumanGate": [],
+      "allowedTools": [],
+      "backgroundSpend": false
+    },
+    "trust": "verified",
+    "version": "0.1.0"
+  },
+  {
+    "name": "typescript-lib",
+    "title": "TypeScript Library Change",
+    "description": "Add or modify functionality in a TypeScript library/package with strict types, build, and tests.",
+    "roles": [
+      "developer"
+    ],
+    "tags": [
+      "typescript",
+      "javascript",
+      "library"
+    ],
+    "triggers": [
+      "typescript change",
+      "add ts function",
+      "update the library"
+    ],
+    "agents": [
+      "analyst",
+      "developer",
+      "tester",
+      "reviewer"
+    ],
+    "skills": [
+      "requirement-analysis",
+      "ponytail",
+      "test-authoring",
+      "code-review"
+    ],
+    "stages": [
+      {
+        "id": "plan",
+        "title": "Plan",
+        "agent": "analyst",
+        "model": "opus",
+        "skills": [
+          "requirement-analysis",
+          "codegraph-query",
+          "ponytail"
+        ],
+        "tools": [],
+        "instruction": "First detect THIS workspace stack and conventions from CLAUDE.md, .claude/rules, and existing files. Match them exactly; reuse existing utilities and patterns. Be token-efficient. Break the requirement into a concrete, ordered implementation plan: files to add/change, key functions/types, edge cases, and how it will be verified. Do not write code yet."
+      },
+      {
+        "id": "implement",
+        "title": "Implement",
+        "agent": "developer",
+        "model": "sonnet",
+        "skills": [
+          "ponytail"
+        ],
+        "tools": [],
+        "instruction": "First detect THIS workspace stack and conventions from CLAUDE.md, .claude/rules, and existing files. Match them exactly; reuse existing utilities and patterns. Be token-efficient. Implement the change with strict, well-typed TypeScript (avoid any). Keep the public API minimal and update exports. Run the build (tsc) and resolve all type errors.",
+        "verify": "build"
+      },
+      {
+        "id": "test",
+        "title": "Test",
+        "agent": "tester",
+        "model": "sonnet",
+        "skills": [
+          "test-authoring"
+        ],
+        "tools": [],
+        "instruction": "Add/adjust tests for the new/changed API including edge cases; run the test suite.",
+        "verify": "tests"
+      },
+      {
+        "id": "review",
+        "title": "Review",
+        "agent": "reviewer",
+        "model": "sonnet",
+        "skills": [
+          "code-review"
+        ],
+        "tools": [],
+        "instruction": "Review the changes against the requirement and workspace conventions: correctness, convention compliance, error handling, and tests. List high-confidence issues with concrete fixes and a final verdict as JSON {\"passed\":bool,\"issues\":[]}."
+      }
+    ],
+    "levers": [
+      "codegraph",
+      "ponytail",
+      "routing",
+      "caveman"
+    ],
+    "guardrails": {
+      "maxRetries": 2,
+      "maxLoopDepth": 6,
+      "budget": {
+        "tokens": 2000000
+      },
+      "stageTimeoutMs": 600000,
+      "qualityThreshold": "verifier-must-pass",
+      "onBreach": "pause",
+      "requireHumanGate": [],
+      "allowedTools": [],
+      "backgroundSpend": false
+    },
+    "trust": "verified",
+    "version": "0.1.0"
+  },
+  {
+    "name": "frontend-feature",
+    "title": "Frontend Feature",
+    "description": "Build or change a frontend feature/component (HTML, CSS, JavaScript/TypeScript, React) matching the workspace UI stack, accessible and building clean.",
+    "roles": [
+      "developer",
+      "designer"
+    ],
+    "tags": [
+      "frontend",
+      "html",
+      "css",
+      "javascript",
+      "typescript",
+      "react"
+    ],
+    "triggers": [
+      "build component",
+      "frontend feature",
+      "add a page",
+      "ui change"
+    ],
+    "agents": [
+      "analyst",
+      "frontend-engineer",
+      "reviewer"
+    ],
+    "skills": [
+      "requirement-analysis",
+      "design-tokens",
+      "accessibility",
+      "code-review"
+    ],
+    "stages": [
+      {
+        "id": "plan",
+        "title": "Plan",
+        "agent": "analyst",
+        "model": "opus",
+        "skills": [
+          "requirement-analysis",
+          "codegraph-query",
+          "ponytail"
+        ],
+        "tools": [],
+        "instruction": "First detect THIS workspace stack and conventions from CLAUDE.md, .claude/rules, and existing files. Match them exactly; reuse existing utilities and patterns. Be token-efficient. Break the requirement into a concrete, ordered implementation plan: files to add/change, key functions/types, edge cases, and how it will be verified. Do not write code yet."
+      },
+      {
+        "id": "implement",
+        "title": "Implement",
+        "agent": "frontend-engineer",
+        "model": "sonnet",
+        "skills": [
+          "design-tokens",
+          "accessibility",
+          "ponytail"
+        ],
+        "tools": [],
+        "instruction": "First detect THIS workspace stack and conventions from CLAUDE.md, .claude/rules, and existing files. Match them exactly; reuse existing utilities and patterns. Be token-efficient. Implement the feature as component/markup/style files that match the workspace framework and styling system exactly (reuse wrapped components; do not add a new UI library). Ensure semantic HTML and accessibility (labels, roles, keyboard). Run the build and fix errors.",
+        "verify": "build"
+      },
+      {
+        "id": "review",
+        "title": "Review",
+        "agent": "reviewer",
+        "model": "sonnet",
+        "skills": [
+          "accessibility",
+          "code-review"
+        ],
+        "tools": [],
+        "instruction": "Review for convention compliance, accessibility, responsiveness, and correctness. List high-confidence issues with fixes and a JSON verdict {\"passed\":bool,\"issues\":[]}."
+      }
+    ],
+    "levers": [
+      "codegraph",
+      "ponytail",
+      "routing",
+      "caveman"
+    ],
+    "guardrails": {
+      "maxRetries": 2,
+      "maxLoopDepth": 6,
+      "budget": {
+        "tokens": 2000000
+      },
+      "stageTimeoutMs": 600000,
+      "qualityThreshold": "verifier-must-pass",
+      "onBreach": "pause",
+      "requireHumanGate": [],
+      "allowedTools": [],
+      "backgroundSpend": false
+    },
+    "trust": "verified",
+    "version": "0.1.0"
+  },
+  {
+    "name": "dotnet-service",
+    "title": ".NET (C#) Service Feature",
+    "description": "Implement or change a feature in a C#/.NET service or API following the solution's architecture, with build + tests.",
+    "roles": [
+      "developer"
+    ],
+    "tags": [
+      "csharp",
+      "dotnet",
+      "backend"
+    ],
+    "triggers": [
+      "dotnet feature",
+      "c# endpoint",
+      "add service dotnet",
+      ".net change"
+    ],
+    "agents": [
+      "architect",
+      "developer",
+      "tester",
+      "reviewer"
+    ],
+    "skills": [
+      "requirement-analysis",
+      "ponytail",
+      "test-authoring",
+      "code-review"
+    ],
+    "stages": [
+      {
+        "id": "plan",
+        "title": "Plan",
+        "agent": "architect",
+        "model": "opus",
+        "skills": [
+          "requirement-analysis",
+          "codegraph-query",
+          "ponytail"
+        ],
+        "tools": [],
+        "instruction": "First detect THIS workspace stack and conventions from CLAUDE.md, .claude/rules, and existing files. Match them exactly; reuse existing utilities and patterns. Be token-efficient. Break the requirement into a concrete, ordered implementation plan: files to add/change, key functions/types, edge cases, and how it will be verified. Do not write code yet."
+      },
+      {
+        "id": "implement",
+        "title": "Implement",
+        "agent": "developer",
+        "model": "sonnet",
+        "skills": [
+          "ponytail"
+        ],
+        "tools": [],
+        "instruction": "First detect THIS workspace stack and conventions from CLAUDE.md, .claude/rules, and existing files. Match them exactly; reuse existing utilities and patterns. Be token-efficient. Implement the plan in the .NET solution following its module/layer conventions (DI, one type per file, existing patterns). Run dotnet build and fix all errors.",
+        "verify": "build"
+      },
+      {
+        "id": "test",
+        "title": "Test",
+        "agent": "tester",
+        "model": "sonnet",
+        "skills": [
+          "test-authoring"
+        ],
+        "tools": [],
+        "instruction": "Add/adjust xUnit/NUnit tests for the new behavior and edge cases, then run dotnet test.",
+        "verify": "tests"
+      },
+      {
+        "id": "review",
+        "title": "Review",
+        "agent": "reviewer",
+        "model": "sonnet",
+        "skills": [
+          "code-review"
+        ],
+        "tools": [],
+        "instruction": "Review the changes against the requirement and workspace conventions: correctness, convention compliance, error handling, and tests. List high-confidence issues with concrete fixes and a final verdict as JSON {\"passed\":bool,\"issues\":[]}."
+      }
+    ],
+    "levers": [
+      "codegraph",
+      "ponytail",
+      "routing",
+      "caveman"
+    ],
+    "guardrails": {
+      "maxRetries": 2,
+      "maxLoopDepth": 6,
+      "budget": {
+        "tokens": 2000000
+      },
+      "stageTimeoutMs": 600000,
+      "qualityThreshold": "verifier-must-pass",
+      "onBreach": "pause",
+      "requireHumanGate": [],
+      "allowedTools": [],
+      "backgroundSpend": false
+    },
+    "trust": "verified",
+    "version": "0.1.0"
+  },
+  {
+    "name": "java-service",
+    "title": "Java Service Feature",
+    "description": "Implement or change a feature in a Java service (Spring Boot / Maven or Gradle) following project conventions, with build + tests.",
+    "roles": [
+      "developer"
+    ],
+    "tags": [
+      "java",
+      "backend",
+      "spring"
+    ],
+    "triggers": [
+      "java feature",
+      "spring endpoint",
+      "add java service"
+    ],
+    "agents": [
+      "architect",
+      "developer",
+      "tester",
+      "reviewer"
+    ],
+    "skills": [
+      "requirement-analysis",
+      "ponytail",
+      "test-authoring",
+      "code-review"
+    ],
+    "stages": [
+      {
+        "id": "plan",
+        "title": "Plan",
+        "agent": "architect",
+        "model": "opus",
+        "skills": [
+          "requirement-analysis",
+          "codegraph-query",
+          "ponytail"
+        ],
+        "tools": [],
+        "instruction": "First detect THIS workspace stack and conventions from CLAUDE.md, .claude/rules, and existing files. Match them exactly; reuse existing utilities and patterns. Be token-efficient. Break the requirement into a concrete, ordered implementation plan: files to add/change, key functions/types, edge cases, and how it will be verified. Do not write code yet."
+      },
+      {
+        "id": "implement",
+        "title": "Implement",
+        "agent": "developer",
+        "model": "sonnet",
+        "skills": [
+          "ponytail"
+        ],
+        "tools": [],
+        "instruction": "First detect THIS workspace stack and conventions from CLAUDE.md, .claude/rules, and existing files. Match them exactly; reuse existing utilities and patterns. Be token-efficient. Implement the plan following the project's package/layer conventions (controllers/services/repositories, DI). Build with the project's tool (mvn -q compile or ./gradlew build) and fix errors.",
+        "verify": "build"
+      },
+      {
+        "id": "test",
+        "title": "Test",
+        "agent": "tester",
+        "model": "sonnet",
+        "skills": [
+          "test-authoring"
+        ],
+        "tools": [],
+        "instruction": "Add/adjust JUnit tests for the new behavior and edge cases; run the project's test task (mvn test or ./gradlew test).",
+        "verify": "tests"
+      },
+      {
+        "id": "review",
+        "title": "Review",
+        "agent": "reviewer",
+        "model": "sonnet",
+        "skills": [
+          "code-review"
+        ],
+        "tools": [],
+        "instruction": "Review the changes against the requirement and workspace conventions: correctness, convention compliance, error handling, and tests. List high-confidence issues with concrete fixes and a final verdict as JSON {\"passed\":bool,\"issues\":[]}."
+      }
+    ],
+    "levers": [
+      "codegraph",
+      "ponytail",
+      "routing",
+      "caveman"
+    ],
+    "guardrails": {
+      "maxRetries": 2,
+      "maxLoopDepth": 6,
+      "budget": {
+        "tokens": 2000000
+      },
+      "stageTimeoutMs": 600000,
+      "qualityThreshold": "advisory",
+      "onBreach": "pause",
+      "requireHumanGate": [],
+      "allowedTools": [],
+      "backgroundSpend": false
+    },
+    "trust": "verified",
+    "version": "0.1.0"
+  },
+  {
+    "name": "powershell-automation",
+    "title": "PowerShell Automation",
+    "description": "Write or modify a PowerShell script/module for automation, following best practices (approved verbs, param validation, error handling).",
+    "roles": [
+      "developer",
+      "devops"
+    ],
+    "tags": [
+      "powershell",
+      "automation",
+      "scripting",
+      "devops"
+    ],
+    "triggers": [
+      "powershell script",
+      "automate with powershell",
+      "ps module"
+    ],
+    "agents": [
+      "analyst",
+      "developer",
+      "reviewer"
+    ],
+    "skills": [
+      "requirement-analysis",
+      "repo-scan",
+      "code-review"
+    ],
+    "stages": [
+      {
+        "id": "plan",
+        "title": "Plan",
+        "agent": "analyst",
+        "model": "opus",
+        "skills": [
+          "requirement-analysis",
+          "codegraph-query",
+          "ponytail"
+        ],
+        "tools": [],
+        "instruction": "First detect THIS workspace stack and conventions from CLAUDE.md, .claude/rules, and existing files. Match them exactly; reuse existing utilities and patterns. Be token-efficient. Break the requirement into a concrete, ordered implementation plan: files to add/change, key functions/types, edge cases, and how it will be verified. Do not write code yet."
+      },
+      {
+        "id": "implement",
+        "title": "Implement",
+        "agent": "developer",
+        "model": "sonnet",
+        "skills": [
+          "ponytail"
+        ],
+        "tools": [],
+        "instruction": "First detect THIS workspace stack and conventions from CLAUDE.md, .claude/rules, and existing files. Match them exactly; reuse existing utilities and patterns. Be token-efficient. Implement the PowerShell script/module: approved verbs, [CmdletBinding()], typed params with validation, $ErrorActionPreference stop semantics, clear output, and idempotency. If Pester tests exist in the repo, run Invoke-Pester and fix failures."
+      },
+      {
+        "id": "review",
+        "title": "Review",
+        "agent": "reviewer",
+        "model": "sonnet",
+        "skills": [
+          "code-review"
+        ],
+        "tools": [],
+        "instruction": "Review the changes against the requirement and workspace conventions: correctness, convention compliance, error handling, and tests. List high-confidence issues with concrete fixes and a final verdict as JSON {\"passed\":bool,\"issues\":[]}."
+      }
+    ],
+    "levers": [
+      "codegraph",
+      "ponytail",
+      "routing",
+      "caveman"
+    ],
+    "guardrails": {
+      "maxRetries": 2,
+      "maxLoopDepth": 6,
+      "budget": {
+        "tokens": 2000000
+      },
+      "stageTimeoutMs": 600000,
+      "qualityThreshold": "advisory",
+      "onBreach": "pause",
+      "requireHumanGate": [],
+      "allowedTools": [],
+      "backgroundSpend": false
+    },
+    "trust": "verified",
+    "version": "0.1.0"
+  },
+  {
+    "name": "devops-pipeline",
+    "title": "DevOps Pipeline & IaC",
+    "description": "Create or change CI/CD pipelines and infrastructure-as-code (GitHub Actions/GitLab CI, Docker, Terraform), safely and idempotently.",
+    "roles": [
+      "devops",
+      "developer"
+    ],
+    "tags": [
+      "devops",
+      "ci",
+      "cd",
+      "docker",
+      "terraform",
+      "iac"
+    ],
+    "triggers": [
+      "add ci pipeline",
+      "github actions",
+      "dockerize",
+      "terraform change",
+      "devops"
+    ],
+    "agents": [
+      "architect",
+      "developer",
+      "reviewer"
+    ],
+    "skills": [
+      "requirement-analysis",
+      "repo-scan",
+      "code-review"
+    ],
+    "stages": [
+      {
+        "id": "plan",
+        "title": "Plan",
+        "agent": "architect",
+        "model": "opus",
+        "skills": [
+          "requirement-analysis",
+          "codegraph-query",
+          "ponytail"
+        ],
+        "tools": [],
+        "instruction": "First detect THIS workspace stack and conventions from CLAUDE.md, .claude/rules, and existing files. Match them exactly; reuse existing utilities and patterns. Be token-efficient. Break the requirement into a concrete, ordered implementation plan: files to add/change, key functions/types, edge cases, and how it will be verified. Do not write code yet."
+      },
+      {
+        "id": "implement",
+        "title": "Implement",
+        "agent": "developer",
+        "model": "sonnet",
+        "skills": [
+          "ponytail"
+        ],
+        "tools": [],
+        "instruction": "First detect THIS workspace stack and conventions from CLAUDE.md, .claude/rules, and existing files. Match them exactly; reuse existing utilities and patterns. Be token-efficient. Implement the pipeline/IaC change matching the repo's existing CI system and conventions. Pin action/image versions, keep secrets out of the files, make steps idempotent, and validate syntax where a validator is present (terraform validate, docker build, actionlint)."
+      },
+      {
+        "id": "review",
+        "title": "Review",
+        "agent": "reviewer",
+        "model": "sonnet",
+        "skills": [
+          "code-review"
+        ],
+        "tools": [],
+        "instruction": "Review the changes against the requirement and workspace conventions: correctness, convention compliance, error handling, and tests. List high-confidence issues with concrete fixes and a final verdict as JSON {\"passed\":bool,\"issues\":[]}."
+      }
+    ],
+    "levers": [
+      "codegraph",
+      "ponytail",
+      "routing",
+      "caveman"
+    ],
+    "guardrails": {
+      "maxRetries": 2,
+      "maxLoopDepth": 6,
+      "budget": {
+        "tokens": 2000000
+      },
+      "stageTimeoutMs": 600000,
+      "qualityThreshold": "advisory",
+      "onBreach": "pause",
+      "requireHumanGate": [],
+      "allowedTools": [],
+      "backgroundSpend": false
+    },
+    "trust": "verified",
+    "version": "0.1.0"
   }
 ]

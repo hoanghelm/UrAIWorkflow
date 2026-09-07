@@ -22,12 +22,14 @@ public sealed class ClaudeAgentConnector(HttpClient http) : IAgentConnector
             using var req = new HttpRequestMessage(HttpMethod.Post, $"{baseUrl}/v1/messages");
             req.Headers.TryAddWithoutValidation("x-api-key", context.ApiKey);
             req.Headers.TryAddWithoutValidation("anthropic-version", "2023-06-01");
-            req.Content = JsonContent.Create(new
-            {
-                model,
-                max_tokens = 4096,
-                messages = new[] { new { role = "user", content = request.Prompt } },
-            });
+            var messages = new[] { new { role = "user", content = request.Prompt } };
+            var texts = request.System.Where(s => !string.IsNullOrWhiteSpace(s)).ToArray();
+            var system = texts.Select((s, i) => i == texts.Length - 1
+                ? (object)new { type = "text", text = s, cache_control = new { type = "ephemeral" } }
+                : new { type = "text", text = s }).ToArray();
+            req.Content = system.Length > 0
+                ? JsonContent.Create(new { model, max_tokens = 4096, system, messages })
+                : JsonContent.Create(new { model, max_tokens = 4096, messages });
 
             using var resp = await http.SendAsync(req, ct);
             var body = await resp.Content.ReadFromJsonAsync<JsonElement>(Json, ct);
@@ -45,7 +47,8 @@ public sealed class ClaudeAgentConnector(HttpClient http) : IAgentConnector
 
             var input = body.TryGetProperty("usage", out var u) && u.TryGetProperty("input_tokens", out var it) ? it.GetInt32() : request.Prompt.Length / 4;
             var output = body.TryGetProperty("usage", out var u2) && u2.TryGetProperty("output_tokens", out var ot) ? ot.GetInt32() : text.Length / 4;
-            return new StageResult(true, text, input, output);
+            var cached = body.TryGetProperty("usage", out var u3) && u3.TryGetProperty("cache_read_input_tokens", out var cr) ? cr.GetInt32() : 0;
+            return new StageResult(true, text, input, output, cached);
         }
         catch (OperationCanceledException) { throw; }
         catch (Exception ex)

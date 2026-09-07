@@ -6,7 +6,7 @@ using Vcc.Orchestration.Events;
 
 namespace Vcc.Orchestration.Stages;
 
-public sealed record StageExecutionContext(string RunId, string ProjectId, StageDef Stage, GuardrailsDef Guardrails, string Model, string Prompt, string Cwd);
+public sealed record StageExecutionContext(string RunId, string ProjectId, StageDef Stage, GuardrailsDef Guardrails, string Model, IReadOnlyList<string> System, string Prompt, string Cwd);
 
 public sealed record StageOutcome(bool Passed, string Output, string Breach, int TokensSpent, int Attempts, string LogText, string LogTrace);
 
@@ -34,7 +34,7 @@ public sealed class StageExecutor(IConnectorRouter connectors, IMetricsRecorder 
             StageResult result;
             try
             {
-                var req = new StageRequest(ctx.RunId, ctx.Stage.Id, ctx.ProjectId, model, ctx.Prompt, ctx.Cwd);
+                var req = new StageRequest(ctx.RunId, ctx.Stage.Id, ctx.ProjectId, model, ctx.System, ctx.Prompt, ctx.Cwd);
                 result = await connectors.RunStageAsync(req,
                     line => { trace.AppendLine(line); return events.DeltaAsync(ctx.RunId, ctx.Stage.Id, line, runCt); }, stageCts.Token);
             }
@@ -46,7 +46,7 @@ public sealed class StageExecutor(IConnectorRouter connectors, IMetricsRecorder 
                 return (false, "stage timed out", "timeout");
             }
 
-            await metrics.RecordAsync(ctx.RunId, ctx.Stage.Id, result.InputTokens, result.OutputTokens, runCt);
+            await metrics.RecordAsync(ctx.RunId, ctx.Stage.Id, result.InputTokens, result.OutputTokens, result.CachedTokens, runCt);
             tokens += result.InputTokens + result.OutputTokens;
             Append(logText, result.Output);
             Append(logTrace, trace.ToString());

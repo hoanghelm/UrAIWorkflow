@@ -126,4 +126,20 @@ internal static class DesignGenerator
               steps = new[] { new { name = "tokens", detail = "Colors and type" }, new { name = "components", detail = "Buttons and cards" } },
               skills = new[] { new { name = "html-ui", title = "HTML UI" } }, rules = new[] { "token driven" }, commands = Array.Empty<string>() },
     ];
+
+    public static readonly IReadOnlyList<object> TestWorkflows =
+    [
+        new { kind = "unit", label = "Unit Tests", agent = "tester", agentTitle = "Tester", model = "sonnet", format = "code",
+              steps = new[] { new { name = "cases", detail = "Enumerate behaviors and edge cases" }, new { name = "author", detail = "Write focused unit tests" }, new { name = "run", detail = "Run the suite and fix failures" } },
+              skills = new[] { new { name = "test-authoring", title = "Test Authoring" } }, rules = new[] { "deterministic", "no network or shared state" }, commands = Array.Empty<string>() },
+        new { kind = "integration", label = "Integration Tests", agent = "tester", agentTitle = "Tester", model = "sonnet", format = "code",
+              steps = new[] { new { name = "fixtures", detail = "Set up real dependencies and fixtures" }, new { name = "exercise", detail = "Drive the module across boundaries" }, new { name = "assert", detail = "Verify observable outcomes" } },
+              skills = new[] { new { name = "test-authoring", title = "Test Authoring" } }, rules = new[] { "isolate side effects", "clean up after each test" }, commands = Array.Empty<string>() },
+        new { kind = "e2e", label = "End-to-End", agent = "tester", agentTitle = "Tester", model = "sonnet", format = "code",
+              steps = new[] { new { name = "flow", detail = "Script the primary user journey" }, new { name = "run", detail = "Execute headless and capture traces" } },
+              skills = new[] { new { name = "test-authoring", title = "Test Authoring" } }, rules = new[] { "stable selectors", "retry only on known flake" }, commands = Array.Empty<string>() },
+        new { kind = "test-plan", label = "Test Plan", agent = "tester", agentTitle = "Tester", model = "haiku", format = "markdown",
+              steps = new[] { new { name = "scenarios", detail = "Enumerate scenarios and risks" }, new { name = "prioritize", detail = "Rank by impact and likelihood" } },
+              skills = new[] { new { name = "test-authoring", title = "Test Authoring" } }, rules = new[] { "cover the unhappy paths" }, commands = Array.Empty<string>() },
+    ];
 }

@@ -11,6 +11,7 @@
     <ProjectReference Include="..\Vcc.Packages\Vcc.Packages.csproj" />
     <ProjectReference Include="..\Vcc.Orchestration\Vcc.Orchestration.csproj" />
     <ProjectReference Include="..\Vcc.Projects\Vcc.Projects.csproj" />
+    <ProjectReference Include="..\Vcc.Features\Vcc.Features.csproj" />
     <ProjectReference Include="..\Vcc.Board\Vcc.Board.csproj" />
     <ProjectReference Include="..\Vcc.Design\Vcc.Design.csproj" />
     <ProjectReference Include="..\Vcc.Test\Vcc.Test.csproj" />
@@ -28,6 +29,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="9.0.1" />
   </ItemGroup>
 
   <PropertyGroup>

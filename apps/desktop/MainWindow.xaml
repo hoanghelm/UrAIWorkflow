@@ -1,0 +1,13 @@
+<Window x:Class="Vcc.Desktop.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        Title="VCC-Workflow" Height="900" Width="1440" WindowStartupLocation="CenterScreen">
+    <Grid Background="#0B0D12">
+        <wv2:WebView2 x:Name="Web" Visibility="Collapsed" />
+        <StackPanel x:Name="Splash" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="VCC-Workflow" FontSize="30" FontWeight="Bold" Foreground="#E6E8EC" HorizontalAlignment="Center" />
+            <TextBlock x:Name="Status" Text="Starting local service…" FontSize="14" Foreground="#9AA0A6" Margin="0,14,0,0" HorizontalAlignment="Center" />
+        </StackPanel>
+    </Grid>
+</Window>

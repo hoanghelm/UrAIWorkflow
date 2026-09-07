@@ -1,26 +1,30 @@
-import { io, type Socket } from "socket.io-client";
+import { HubConnectionBuilder, HubConnectionState, type HubConnection } from "@microsoft/signalr";
 import type { RunEvent } from "@vcc-workflow/schema";
 import { wsBaseUrl, authToken } from "./servers";
 
-let socket: Socket | null = null;
+let connection: HubConnection | null = null;
 
-function connect(): Socket {
-  if (!socket) {
-    const token = authToken();
-    socket = io(`${wsBaseUrl()}/runs`, {
-      transports: ["websocket"],
-      ...(token ? { auth: { token } } : {}),
-    });
+function hub(): HubConnection {
+  if (!connection) {
+    connection = new HubConnectionBuilder()
+      .withUrl(`${wsBaseUrl()}/runs`, { accessTokenFactory: () => authToken() })
+      .withAutomaticReconnect()
+      .build();
   }
-  return socket;
+  if (connection.state === HubConnectionState.Disconnected) {
+    void connection.start().catch(() => undefined);
+  }
+  return connection;
+}
+
+function subscribe<T>(method: string, handler: (value: T) => void): () => void {
+  const h = hub();
+  h.on(method, handler);
+  return () => h.off(method, handler);
 }
 
 export function onRunEvent(handler: (event: RunEvent) => void): () => void {
-  const s = connect();
-  s.on("run.event", handler);
-  return () => {
-    s.off("run.event", handler);
-  };
+  return subscribe<{ runId: string; payload: RunEvent }>("run.event", (m) => handler(m.payload));
 }
 
 export interface RunDelta {
@@ -30,19 +34,15 @@ export interface RunDelta {
 }
 
 export function onRunDelta(handler: (delta: RunDelta) => void): () => void {
-  const s = connect();
-  s.on("run.delta", handler);
-  return () => {
-    s.off("run.delta", handler);
-  };
+  return subscribe<{ runId: string; stageId: string; delta: string }>("run.delta", (m) =>
+    handler({ runId: m.runId, stageId: m.stageId, text: m.delta }),
+  );
 }
 
 export function onRunTrace(handler: (trace: RunDelta) => void): () => void {
-  const s = connect();
-  s.on("run.trace", handler);
-  return () => {
-    s.off("run.trace", handler);
-  };
+  return subscribe<{ runId: string; stageId: string; trace: string }>("run.trace", (m) =>
+    handler({ runId: m.runId, stageId: m.stageId, text: m.trace }),
+  );
 }
 
 export interface RunStarted {
@@ -53,25 +53,15 @@ export interface RunStarted {
 }
 
 export function onRunStarted(handler: (meta: RunStarted) => void): () => void {
-  const s = connect();
-  s.on("run.started", handler);
-  return () => {
-    s.off("run.started", handler);
-  };
+  return subscribe<RunStarted>("run.started", handler);
 }
 
 export function onBoardChanged(handler: (meta: { projectId?: string }) => void): () => void {
-  const s = connect();
-  s.on("board.changed", handler);
-  return () => {
-    s.off("board.changed", handler);
-  };
+  return subscribe<{ projectId?: string }>("board.changed", handler);
 }
 
 export function onReconnect(handler: () => void): () => void {
-  const s = connect();
-  s.io.on("reconnect", handler);
-  return () => {
-    s.io.off("reconnect", handler);
-  };
+  const h = hub();
+  h.onreconnected(handler);
+  return () => undefined;
 }

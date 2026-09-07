@@ -12,6 +12,7 @@ public sealed class Run : Entity
     public string? Breach { get; set; }
     public string? Question { get; set; }
     public string Workflow { get; set; } = "{}";
+    public string Snapshot { get; set; } = "";
     public int TokensConsumed { get; set; }
     public int TokensSaved { get; set; }
     public int TokensInput { get; set; }

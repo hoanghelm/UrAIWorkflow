@@ -49,7 +49,21 @@ public sealed class PackService(IPackageDbContext db, IProjectDbContext projects
     }
 
     public async Task<IReadOnlyList<PackSummaryDto>> ListAsync(CancellationToken ct)
-        => (await db.Packs.OrderBy(p => p.Name).ToListAsync(ct)).Select(ToSummary).ToList();
+        => (await db.Packs.OrderBy(p => p.Name).ToListAsync(ct))
+            .GroupBy(p => p.Name).Select(g => ToSummary(g.OrderByDescending(r => Semver.Key(r.Version)).First())).ToList();
+
+    public async Task<IReadOnlyList<PackSummaryDto>> SearchAsync(string? q, CancellationToken ct)
+    {
+        var all = await ListAsync(ct);
+        if (string.IsNullOrWhiteSpace(q)) return all;
+        var query = q.Trim().ToLowerInvariant();
+        return all.Where(p =>
+            p.Name.ToLowerInvariant().Contains(query, StringComparison.Ordinal)
+            || p.Title.ToLowerInvariant().Contains(query, StringComparison.Ordinal)
+            || p.Description.ToLowerInvariant().Contains(query, StringComparison.Ordinal)
+            || p.Tags.Any(t => t.ToLowerInvariant().Contains(query, StringComparison.Ordinal))
+            || p.Roles.Any(r => r.ToLowerInvariant().Contains(query, StringComparison.Ordinal))).ToList();
+    }
 
     public async Task<IReadOnlyList<ProjectPackSummaryDto>> ListForProjectAsync(string projectId, CancellationToken ct)
     {

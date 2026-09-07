@@ -23,7 +23,7 @@ public interface IRunActionService
     Task<RunCommitDto> CommitAsync(string runId, CancellationToken ct);
 }
 
-public sealed class RunActionService(IRunDbContext db, IProjectDbContext projects, IRunnerService runner, IRunControl control, IWorktreeService worktrees) : IRunActionService
+public sealed class RunActionService(IRunDbContext db, IProjectDbContext projects, IRunnerService runner, IRunControl control, IRunStateMachine stateMachine, IRunSerializer serializer, IWorktreeService worktrees) : IRunActionService
 {
     public async Task<string> CreateAsync(CreateRunInput input, CancellationToken ct)
     {
@@ -33,7 +33,7 @@ public sealed class RunActionService(IRunDbContext db, IProjectDbContext project
         var pack = TryGet(input.Workflow, "pack") ?? "eng-loop";
         var model = TryGet(input.Workflow, "model") ?? "sonnet";
         var request = new RunRequest(input.ProjectId, input.CardId ?? "", title, title, pack, model,
-            project?.Root ?? "", input.Cwd, workflow);
+            project?.Root ?? "", input.Cwd, workflow, Persona: project?.Persona ?? "generalist");
         return await runner.StartRunAsync(request, ct);
     }
 
@@ -52,19 +52,19 @@ public sealed class RunActionService(IRunDbContext db, IProjectDbContext project
 
     public async Task<bool> StopAsync(string runId, CancellationToken ct)
     {
-        var run = await db.Runs.FirstOrDefaultAsync(r => r.Id == runId, ct);
-        if (run is null) return false;
-
-        var cancelled = control.Cancel(runId);
-        if (!cancelled)
+        return await serializer.RunExclusiveAsync(runId, async () =>
         {
-            run.Status = "stopped";
-            run.Breach = "user_stop";
-            run.UpdatedAt = DateTime.UtcNow;
-            db.RunEvents.Add(new RunEvent { RunId = runId, Level = "warn", Status = "stopped", Breach = "user_stop", Message = "run stopped" });
-            await db.SaveChangesAsync(ct);
-        }
-        return true;
+            var run = await db.Runs.FirstOrDefaultAsync(r => r.Id == runId, ct);
+            if (run is null) return false;
+
+            var cancelled = control.Cancel(runId);
+            if (!cancelled && stateMachine.Apply(run, RunTrigger.Cancel, "user_stop"))
+            {
+                db.RunEvents.Add(new RunEvent { RunId = runId, Level = "warn", Status = "stopped", Breach = "user_stop", Message = "run stopped" });
+                await db.SaveChangesAsync(ct);
+            }
+            return true;
+        }, ct);
     }
 
     public async Task<bool> RerunStageAsync(string runId, string stageId, CancellationToken ct)

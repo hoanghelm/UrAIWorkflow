@@ -22,12 +22,15 @@ public interface IWorkflowEngine
 public sealed class WorkflowEngine(
     IRunDbContext db,
     IPackageDbContext packages,
+    IProjectDbContext projects,
     IWorktreeService worktrees,
     IStageExecutor executor,
     IPromptComposer composer,
     IRunStateStore stateStore,
     IRunEventLog events,
     IRunControl control,
+    IRunStateMachine stateMachine,
+    IResourceSnapshot snapshots,
     IServiceScopeFactory scopeFactory,
     ILogger<WorkflowEngine> logger) : IWorkflowEngine
 {
@@ -47,16 +50,26 @@ public sealed class WorkflowEngine(
 
         try
         {
-            var packManifest = await LatestPackManifestAsync(run.Pack);
+            var packManifest = await LatestPackManifestAsync(run.Pack, run.ProjectId);
             var workflow = WorkflowParser.Resolve(run.Workflow, packManifest, string.IsNullOrEmpty(run.Name) ? run.Pack : run.Name);
             var g = workflow.Guardrails;
+
+            if ((string.IsNullOrEmpty(run.Workflow) || run.Workflow.Trim() is "{}" or "[]") && !string.IsNullOrEmpty(packManifest))
+                run.Workflow = packManifest!;
+
+            if (string.IsNullOrEmpty(run.Snapshot))
+            {
+                var skillNames = workflow.Stages.SelectMany(s => s.Skills).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToList();
+                var agentNames = workflow.Stages.Select(s => s.Agent).Append(state.Persona).Where(x => !string.IsNullOrWhiteSpace(x)).Distinct().ToList();
+                run.Snapshot = await snapshots.BuildAsync(run.ProjectId ?? "", run.Pack, skillNames, agentNames, runCt);
+            }
+            state = state with { Snapshot = run.Snapshot };
 
             string cwd;
             if (!string.IsNullOrEmpty(run.Cwd)) cwd = run.Cwd!;
             else { var worktree = await worktrees.CreateAsync(state.ProjectRoot, runId, runCt); cwd = worktree.Path; }
             run.Cwd = cwd;
-            run.Status = "running";
-            run.UpdatedAt = DateTime.UtcNow;
+            stateMachine.Apply(run, RunTrigger.Begin);
             await db.SaveChangesAsync(runCt);
             await events.EmitAsync(runId, "info", null, "running", null, state.StageIndex == 0 ? "run started" : "run resumed", runCt);
 
@@ -76,9 +89,7 @@ public sealed class WorkflowEngine(
                 {
                     state = state with { StageIndex = i };
                     await stateStore.SaveAsync(runId, state, runCt);
-                    run.Status = "waiting";
-                    run.Question = $"Approve stage \"{stage.Title}\" to continue.";
-                    run.UpdatedAt = DateTime.UtcNow;
+                    stateMachine.Apply(run, RunTrigger.AwaitInput, question: $"Approve stage \"{stage.Title}\" to continue.");
                     await db.SaveChangesAsync(runCt);
                     await events.EmitAsync(runId, "info", stage.Id, "waiting", null, $"waiting for approval: {stage.Title}", runCt);
                     await events.BoardChangedAsync(run.ProjectId ?? "", runCt);
@@ -125,10 +136,7 @@ public sealed class WorkflowEngine(
                 i = batchEnd;
             }
 
-            run.Status = "done";
-            run.Question = null;
-            run.Breach = null;
-            run.UpdatedAt = DateTime.UtcNow;
+            stateMachine.Apply(run, RunTrigger.Complete);
             await db.SaveChangesAsync();
             runSpan?.SetTag("run.status", "done");
             OrchestrationTelemetry.RunsCompleted.Add(1);
@@ -140,13 +148,8 @@ public sealed class WorkflowEngine(
             OrchestrationTelemetry.RunsFailed.Add(1);
             runSpan?.SetTag("run.status", "stopped");
             var current = await db.Runs.FirstOrDefaultAsync(r => r.Id == runId);
-            if (current is not null && current.Status is not ("stopped" or "done"))
-            {
-                current.Status = "stopped";
-                current.Breach = "user_stop";
-                current.UpdatedAt = DateTime.UtcNow;
+            if (current is not null && stateMachine.Apply(current, RunTrigger.Cancel, "user_stop"))
                 await db.SaveChangesAsync();
-            }
             await events.EmitAsync(runId, "warn", null, "stopped", "user_stop", "run stopped", CancellationToken.None);
             await events.BoardChangedAsync(run.ProjectId ?? "", CancellationToken.None);
         }
@@ -156,7 +159,7 @@ public sealed class WorkflowEngine(
             OrchestrationTelemetry.RunsFailed.Add(1);
             runSpan?.SetTag("run.status", "failed");
             var current = await db.Runs.FirstOrDefaultAsync(r => r.Id == runId);
-            if (current is not null) { current.Status = "failed"; await db.SaveChangesAsync(); }
+            if (current is not null && stateMachine.Apply(current, RunTrigger.Fail)) await db.SaveChangesAsync();
             await events.EmitAsync(runId, "error", null, "failed", null, ex.Message, CancellationToken.None);
         }
         finally
@@ -168,7 +171,7 @@ public sealed class WorkflowEngine(
     private async Task<IReadOnlyList<StageOutcome>> RunStagesAsync(
         string runId, string projectId, WorkflowDef workflow, GuardrailsDef g, ExecutionState state, string cwd, IReadOnlyList<int> indices, CancellationToken runCt)
     {
-        var jobs = new List<(StageDef stage, Stage row, string tier, string prompt)>();
+        var jobs = new List<(StageDef stage, Stage row, string tier, ComposedPrompt composed)>();
         foreach (var idx in indices)
         {
             var stage = workflow.Stages[idx];
@@ -178,6 +181,7 @@ public sealed class WorkflowEngine(
             row.Model = tier;
             row.Status = "running";
             jobs.Add((stage, row, tier, await composer.ComposeAsync(state, stage, workflow, runCt)));
+
         }
         await db.SaveChangesAsync(runCt);
         foreach (var job in jobs) await events.EmitStageAsync(runId, job.stage.Id, "running", runCt);
@@ -185,11 +189,11 @@ public sealed class WorkflowEngine(
         StageOutcome[] outcomes;
         if (jobs.Count == 1)
         {
-            outcomes = [await ExecuteInstrumentedAsync(runId, projectId, g, jobs[0].stage, jobs[0].tier, jobs[0].prompt, cwd, executor, runCt)];
+            outcomes = [await ExecuteInstrumentedAsync(runId, projectId, g, jobs[0].stage, jobs[0].tier, jobs[0].composed, cwd, executor, runCt)];
         }
         else
         {
-            var tasks = jobs.Select(job => RunIsolatedAsync(runId, projectId, g, job.stage, job.tier, job.prompt, cwd, runCt)).ToArray();
+            var tasks = jobs.Select(job => RunIsolatedAsync(runId, projectId, g, job.stage, job.tier, job.composed, cwd, runCt)).ToArray();
             outcomes = await Task.WhenAll(tasks);
         }
 
@@ -207,14 +211,14 @@ public sealed class WorkflowEngine(
         return outcomes;
     }
 
-    private async Task<StageOutcome> RunIsolatedAsync(string runId, string projectId, GuardrailsDef g, StageDef stage, string tier, string prompt, string cwd, CancellationToken runCt)
+    private async Task<StageOutcome> RunIsolatedAsync(string runId, string projectId, GuardrailsDef g, StageDef stage, string tier, ComposedPrompt composed, string cwd, CancellationToken runCt)
     {
         using var scope = scopeFactory.CreateScope();
         var isolated = scope.ServiceProvider.GetRequiredService<IStageExecutor>();
-        return await ExecuteInstrumentedAsync(runId, projectId, g, stage, tier, prompt, cwd, isolated, runCt);
+        return await ExecuteInstrumentedAsync(runId, projectId, g, stage, tier, composed, cwd, isolated, runCt);
     }
 
-    private static async Task<StageOutcome> ExecuteInstrumentedAsync(string runId, string projectId, GuardrailsDef g, StageDef stage, string tier, string prompt, string cwd, IStageExecutor stageExecutor, CancellationToken runCt)
+    private static async Task<StageOutcome> ExecuteInstrumentedAsync(string runId, string projectId, GuardrailsDef g, StageDef stage, string tier, ComposedPrompt composed, string cwd, IStageExecutor stageExecutor, CancellationToken runCt)
     {
         using var span = OrchestrationTelemetry.Activity.StartActivity("workflow.stage");
         span?.SetTag("stage.id", stage.Id);
@@ -222,7 +226,7 @@ public sealed class WorkflowEngine(
         span?.SetTag("stage.model", tier);
         var stopwatch = Stopwatch.StartNew();
 
-        var outcome = await stageExecutor.ExecuteAsync(new StageExecutionContext(runId, projectId, stage, g, tier, prompt, cwd), runCt);
+        var outcome = await stageExecutor.ExecuteAsync(new StageExecutionContext(runId, projectId, stage, g, tier, composed.System, composed.User, cwd), runCt);
 
         stopwatch.Stop();
         var tag = new KeyValuePair<string, object?>("stage.id", stage.Id);
@@ -260,18 +264,9 @@ public sealed class WorkflowEngine(
     {
         await stateStore.SaveAsync(runId, state, ct);
         if (g.OnBreach == "stop")
-        {
-            run.Status = "failed";
-            run.Breach = reason;
-            run.Question = null;
-        }
+            stateMachine.Apply(run, RunTrigger.Fail, reason);
         else
-        {
-            run.Status = "waiting";
-            run.Breach = reason;
-            run.Question = $"{message}. Resume to continue.";
-        }
-        run.UpdatedAt = DateTime.UtcNow;
+            stateMachine.Apply(run, RunTrigger.AwaitInput, reason, $"{message}. Resume to continue.");
         await db.SaveChangesAsync(ct);
         if (run.Status == "failed") OrchestrationTelemetry.RunsFailed.Add(1);
         await events.EmitAsync(runId, "warn", null, run.Status, reason, message, ct);
@@ -288,11 +283,20 @@ public sealed class WorkflowEngine(
         await db.SaveChangesAsync(ct);
     }
 
-    private async Task<string?> LatestPackManifestAsync(string packName)
+    private async Task<string?> LatestPackManifestAsync(string packName, string? projectId)
     {
         if (string.IsNullOrEmpty(packName)) return null;
         var rows = await packages.Packs.Where(p => p.Name == packName).ToListAsync();
-        return rows.Count == 0 ? null : rows.OrderByDescending(p => p.Version, StringComparer.Ordinal).First().Manifest;
+        if (rows.Count == 0) return null;
+
+        if (!string.IsNullOrEmpty(projectId))
+        {
+            var pin = await projects.ProjectPacks.FirstOrDefaultAsync(p => p.ProjectId == projectId && p.PackName == packName);
+            var pinned = pin is null ? null : rows.FirstOrDefault(r => r.Version == pin.InstalledVersion);
+            if (pinned is not null) return pinned.Manifest;
+        }
+
+        return rows.OrderByDescending(p => p.Version, StringComparer.Ordinal).First().Manifest;
     }
 
     private static string AppendContext(string context, StageDef stage, string output)

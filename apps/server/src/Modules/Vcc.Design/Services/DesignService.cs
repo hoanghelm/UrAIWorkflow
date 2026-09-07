@@ -150,4 +150,6 @@ public sealed class DesignService(IDesignDbContext db, IDesignMapper mapper) : I
     }
 
     public IReadOnlyList<object> Workflows() => DesignGenerator.Workflows;
+
+    public IReadOnlyList<object> TestWorkflows() => DesignGenerator.TestWorkflows;
 }

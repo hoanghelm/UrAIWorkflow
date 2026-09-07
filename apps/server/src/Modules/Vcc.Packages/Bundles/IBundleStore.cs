@@ -4,5 +4,7 @@ public interface IBundleStore
 {
     IReadOnlyList<BundleEntry> ReadIndex();
     string PrimaryContent(string archiveFile, string? primaryEntry);
-    bool ExtractInto(string archiveFile, string destRoot);
+    string ComputeHash(string archiveFile);
+    ExtractResult ExtractInto(string archiveFile, string destRoot);
+    Task<IReadOnlyList<string>> WriteArchiveAsync(string archiveFile, IReadOnlyList<FetchedFile> files, CancellationToken ct);
 }

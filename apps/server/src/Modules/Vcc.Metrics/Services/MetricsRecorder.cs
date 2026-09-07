@@ -7,24 +7,27 @@ namespace Vcc.Metrics.Services;
 
 public sealed class MetricsRecorder(IMetricsDbContext metrics, IRunDbContext runs) : IMetricsRecorder
 {
-    public async Task RecordAsync(string runId, string lever, int inputTokens, int outputTokens, CancellationToken ct)
+    public async Task RecordAsync(string runId, string lever, int inputTokens, int outputTokens, int cachedTokens, CancellationToken ct)
     {
         var total = inputTokens + outputTokens;
+        var saved = (int)Math.Round(cachedTokens * 0.9);
 
         metrics.LedgerEntries.Add(new LedgerEntry
         {
             RunId = runId,
             StageId = lever,
             Lever = lever,
-            TokensBefore = 0,
+            TokensBefore = cachedTokens,
             TokensAfter = total,
-            Saved = 0,
+            Saved = saved,
         });
         await metrics.SaveChangesAsync(ct);
 
         await runs.Runs.Where(r => r.Id == runId).ExecuteUpdateAsync(s => s
             .SetProperty(r => r.TokensInput, r => r.TokensInput + inputTokens)
             .SetProperty(r => r.TokensOutput, r => r.TokensOutput + outputTokens)
-            .SetProperty(r => r.TokensConsumed, r => r.TokensConsumed + total), ct);
+            .SetProperty(r => r.TokensConsumed, r => r.TokensConsumed + total)
+            .SetProperty(r => r.TokensCached, r => r.TokensCached + cachedTokens)
+            .SetProperty(r => r.TokensSaved, r => r.TokensSaved + saved), ct);
     }
 }
