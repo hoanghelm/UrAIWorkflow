@@ -2,6 +2,14 @@
 node_modules/
 .pnpm-store/
 
+# Playwright browser packs — vendored out-of-band, too large for git
+vendor/
+pw-browser-pack-*.tar.gz
+apps/server/scripts/browsers-*/
+
+# Desktop installer staging output (produced by bundle.ps1)
+apps/desktop/build/stage/
+
 # Build output
 dist/
 build/
@@ -45,6 +53,7 @@ secrets.json
 *.db-journal
 *.db-wal
 *.db-shm
+*.db.bak-*
 *.sqlite
 *.sqlite3
 

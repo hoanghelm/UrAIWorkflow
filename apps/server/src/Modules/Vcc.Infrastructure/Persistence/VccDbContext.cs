@@ -7,7 +7,7 @@ namespace Vcc.Infrastructure.Persistence;
 public sealed class VccDbContext(DbContextOptions<VccDbContext> options)
     : DbContext(options),
       IProjectDbContext, IBoardDbContext, IRunDbContext, IPackageDbContext,
-      IConnectorDbContext, IDesignDbContext, IMetricsDbContext
+      IConnectorDbContext, IDesignDbContext, IMetricsDbContext, IMemoryDbContext, IFeatureDbContext
 {
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<ProjectPack> ProjectPacks => Set<ProjectPack>();
@@ -23,6 +23,7 @@ public sealed class VccDbContext(DbContextOptions<VccDbContext> options)
     public DbSet<RunEvent> RunEvents => Set<RunEvent>();
     public DbSet<Checkpoint> Checkpoints => Set<Checkpoint>();
     public DbSet<StageLog> StageLogs => Set<StageLog>();
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
     public DbSet<Bundle> Bundles => Set<Bundle>();
     public DbSet<CatalogItem> CatalogItems => Set<CatalogItem>();
     public DbSet<Pack> Packs => Set<Pack>();
@@ -32,6 +33,8 @@ public sealed class VccDbContext(DbContextOptions<VccDbContext> options)
     public DbSet<DesignVersion> DesignVersions => Set<DesignVersion>();
     public DbSet<LedgerEntry> LedgerEntries => Set<LedgerEntry>();
     public DbSet<UsageStat> UsageStats => Set<UsageStat>();
+    public DbSet<MemoryEntry> MemoryEntries => Set<MemoryEntry>();
+    public DbSet<FeatureFlag> FeatureFlags => Set<FeatureFlag>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

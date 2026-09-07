@@ -29,6 +29,7 @@ public interface IRunDbContext
     DbSet<RunEvent> RunEvents { get; }
     DbSet<Checkpoint> Checkpoints { get; }
     DbSet<StageLog> StageLogs { get; }
+    DbSet<OutboxMessage> OutboxMessages { get; }
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }
 
@@ -58,5 +59,17 @@ public interface IMetricsDbContext
 {
     DbSet<LedgerEntry> LedgerEntries { get; }
     DbSet<UsageStat> UsageStats { get; }
+    Task<int> SaveChangesAsync(CancellationToken ct = default);
+}
+
+public interface IMemoryDbContext
+{
+    DbSet<MemoryEntry> MemoryEntries { get; }
+    Task<int> SaveChangesAsync(CancellationToken ct = default);
+}
+
+public interface IFeatureDbContext
+{
+    DbSet<FeatureFlag> FeatureFlags { get; }
     Task<int> SaveChangesAsync(CancellationToken ct = default);
 }

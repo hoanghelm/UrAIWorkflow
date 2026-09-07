@@ -16,7 +16,12 @@ public static class DependencyInjection
     public static IServiceCollection AddOrchestrationModule(this IServiceCollection services)
     {
         services.AddSingleton<IRunControl, RunControl>();
-        services.AddSingleton<IPromptComposer, PromptComposer>();
+        services.AddSingleton<Context.IWorkspaceResolver, Context.WorkspaceResolver>();
+        services.AddSingleton<Context.IAgentResolver, Context.AgentResolver>();
+        services.AddSingleton<IRunStateMachine, RunStateMachine>();
+        services.AddSingleton<IRunSerializer, RunSerializer>();
+        services.AddSingleton<IRunQueue, RunQueue>();
+        services.AddScoped<IPromptComposer, PromptComposer>();
         services.AddSingleton<IVerdictParser, VerdictParser>();
         services.AddScoped<IStageVerifier, StageVerifier>();
         services.AddScoped<IRunStateStore, RunStateStore>();
@@ -28,6 +33,7 @@ public static class DependencyInjection
         services.AddScoped<IRunActionService, RunActionService>();
         services.AddScoped<ITriggerService, TriggerService>();
         services.AddHostedService<RunWatchdog>();
+        services.AddHostedService<RunQueueWorker>();
         return services;
     }
 }

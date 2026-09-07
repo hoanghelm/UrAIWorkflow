@@ -74,6 +74,9 @@ public static class DesignEndpoints
         app.MapGet("/api/design-workflows", (IDesignService svc) =>
             Results.Ok(svc.Workflows())).WithTags("Designs");
 
+        app.MapGet("/api/test-workflows", (IDesignService svc) =>
+            Results.Ok(svc.TestWorkflows())).WithTags("Designs");
+
         return app;
     }
 }

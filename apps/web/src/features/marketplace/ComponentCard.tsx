@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { MarketplaceItem } from "@vcc-workflow/schema";
 import {
+  Tag,
   ThunderboltOutlined,
   RobotOutlined,
   CodeOutlined,
@@ -74,7 +75,10 @@ export function ComponentCard({
           {KIND_ICON[item.kind]}
         </span>
         <div className="min-w-0 flex-1 pr-6">
-          <div className="truncate font-mono text-[15px] font-semibold">{item.name}</div>
+          <div className="flex items-center gap-2">
+            <span className="truncate font-mono text-[15px] font-semibold">{item.name}</span>
+            <span className="shrink-0 font-mono text-xs text-faint">v{item.version}</span>
+          </div>
           <div className="font-mono text-xs text-faint">
             {item.kind === "template" && item.bundle.length > 0
               ? `bundle · ${item.bundle.length} components`
@@ -88,8 +92,15 @@ export function ComponentCard({
       </p>
 
       <div className="flex items-center justify-between">
-        <span className="rounded-full bg-gray-100 px-2 py-0.5 font-mono text-xs text-muted dark:bg-gray-800 dark:text-faint">
-          {item.tags[0] ?? item.kind}
+        <span className="flex items-center gap-1">
+          <span className="rounded-full bg-gray-100 px-2 py-0.5 font-mono text-xs text-muted dark:bg-gray-800 dark:text-faint">
+            {item.tags[0] ?? item.kind}
+          </span>
+          {item.updateAvailable && <Tag color="orange">update</Tag>}
+          {item.pinned && <Tag color="blue">pinned {item.installedVersion}</Tag>}
+          {!item.pinned && item.installedVersion && !item.updateAvailable && (
+            <Tag color="green">installed</Tag>
+          )}
         </span>
         <div className="flex items-center gap-2">
           {item.source && (

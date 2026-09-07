@@ -23,12 +23,14 @@ public sealed class TerminalAgentConnector(ITerminalSessionManager terminal) : I
         }
 
         var text = output.ToString();
-        return new StageResult(true, text, EstimateTokens(request.Prompt), EstimateTokens(text));
+        return new StageResult(true, text, EstimateTokens(Flatten(request)), EstimateTokens(text));
     }
+
+    private static string Flatten(StageRequest request) => string.Join("\n", request.System.Append(request.Prompt));
 
     private static TerminalSpec BuildSpec(StageRequest request)
     {
-        var prompt = request.Prompt.Replace("\"", "'").Replace("\n", " ");
+        var prompt = Flatten(request).Replace("\"", "'").Replace("\n", " ");
         if (prompt.Length > PromptPreviewLength) prompt = prompt[..PromptPreviewLength];
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

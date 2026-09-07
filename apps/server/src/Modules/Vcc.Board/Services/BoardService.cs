@@ -103,7 +103,7 @@ public sealed class BoardService(
         var card = await board.BoardCards.FirstOrDefaultAsync(c => c.Id == id, ct);
         if (card is null) return null;
         var project = await projects.Projects.FirstOrDefaultAsync(p => p.Id == card.ProjectId, ct);
-        var request = new RunRequest(card.ProjectId, card.Id, card.Title, card.Requirement, card.Pack, card.Model, project?.Root ?? "");
+        var request = new RunRequest(card.ProjectId, card.Id, card.Title, card.Requirement, card.Pack, card.Model, project?.Root ?? "", Persona: project?.Persona ?? "generalist");
         card.RunId = await runner.StartRunAsync(request, ct);
         card.Status = BoardDefaults.StatusInProcess;
         await board.SaveChangesAsync(ct);

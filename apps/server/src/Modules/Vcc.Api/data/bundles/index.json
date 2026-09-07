@@ -462,9 +462,15 @@
     "source": "https://github.com/modelcontextprotocol/servers",
     "mcp": {
       "name": "filesystem",
-      "command": "mcp-server-filesystem",
-      "args": []
-    }
+      "command": "node",
+      "args": [
+        ".claude/mcp/filesystem/server.mjs"
+      ]
+    },
+    "archive": "mcp-filesystem.tar.gz",
+    "entries": [
+      ".claude/mcp/filesystem/server.mjs"
+    ]
   },
   {
     "id": "mcp-github",
@@ -479,12 +485,15 @@
     "source": "https://github.com/modelcontextprotocol/servers",
     "mcp": {
       "name": "github",
-      "command": "npx",
+      "command": "node",
       "args": [
-        "-y",
-        "@modelcontextprotocol/server-github"
+        ".claude/mcp/github/server.cjs"
       ]
-    }
+    },
+    "archive": "mcp-github.tar.gz",
+    "entries": [
+      ".claude/mcp/github/server.cjs"
+    ]
   },
   {
     "id": "mcp-postgres",
@@ -499,12 +508,15 @@
     "source": "https://github.com/modelcontextprotocol/servers",
     "mcp": {
       "name": "postgres",
-      "command": "npx",
+      "command": "node",
       "args": [
-        "-y",
-        "@modelcontextprotocol/server-postgres"
+        ".claude/mcp/postgres/server.cjs"
       ]
-    }
+    },
+    "archive": "mcp-postgres.tar.gz",
+    "entries": [
+      ".claude/mcp/postgres/server.cjs"
+    ]
   },
   {
     "id": "plugin-scaffolding",
@@ -677,12 +689,15 @@
     "source": "https://github.com/modelcontextprotocol/servers",
     "mcp": {
       "name": "memory",
-      "command": "npx",
+      "command": "node",
       "args": [
-        "-y",
-        "@modelcontextprotocol/server-memory"
+        ".claude/mcp/memory/server.mjs"
       ]
-    }
+    },
+    "archive": "mcp-memory.tar.gz",
+    "entries": [
+      ".claude/mcp/memory/server.mjs"
+    ]
   },
   {
     "id": "mcp-sequential-thinking",
@@ -697,12 +712,15 @@
     "source": "https://github.com/modelcontextprotocol/servers",
     "mcp": {
       "name": "sequential-thinking",
-      "command": "npx",
+      "command": "node",
       "args": [
-        "-y",
-        "@modelcontextprotocol/server-sequentialthinking"
+        ".claude/mcp/sequential-thinking/server.cjs"
       ]
-    }
+    },
+    "archive": "mcp-sequential-thinking.tar.gz",
+    "entries": [
+      ".claude/mcp/sequential-thinking/server.cjs"
+    ]
   },
   {
     "id": "mcp-fetch",
@@ -717,10 +735,9 @@
     "source": "https://github.com/modelcontextprotocol/servers",
     "mcp": {
       "name": "fetch",
-      "command": "npx",
+      "command": "uvx",
       "args": [
-        "-y",
-        "@modelcontextprotocol/server-fetch"
+        "mcp-server-fetch"
       ]
     }
   },
@@ -756,10 +773,9 @@
     "source": "https://github.com/modelcontextprotocol/servers",
     "mcp": {
       "name": "time",
-      "command": "npx",
+      "command": "uvx",
       "args": [
-        "-y",
-        "@modelcontextprotocol/server-time"
+        "mcp-server-time"
       ]
     }
   },
@@ -776,12 +792,15 @@
     "source": "https://github.com/modelcontextprotocol/servers",
     "mcp": {
       "name": "everything",
-      "command": "npx",
+      "command": "node",
       "args": [
-        "-y",
-        "@modelcontextprotocol/server-everything"
+        ".claude/mcp/everything/server.mjs"
       ]
-    }
+    },
+    "archive": "mcp-everything.tar.gz",
+    "entries": [
+      ".claude/mcp/everything/server.mjs"
+    ]
   },
   {
     "id": "skill-skill-creator",
@@ -794,7 +813,11 @@
       "official"
     ],
     "stars": 0,
-    "source": "https://github.com/anthropics/skills/tree/main/skills/skill-creator"
+    "source": "https://github.com/anthropics/skills/tree/main/skills/skill-creator",
+    "archive": "skill-skill-creator.tar.gz",
+    "entries": [
+      ".claude/skills/skill-creator/SKILL.md"
+    ]
   },
   {
     "id": "skill-mcp-builder",
@@ -807,7 +830,11 @@
       "official"
     ],
     "stars": 0,
-    "source": "https://github.com/anthropics/skills/tree/main/skills/mcp-builder"
+    "source": "https://github.com/anthropics/skills/tree/main/skills/mcp-builder",
+    "archive": "skill-mcp-builder.tar.gz",
+    "entries": [
+      ".claude/skills/mcp-builder/SKILL.md"
+    ]
   },
   {
     "id": "skill-frontend-design",
@@ -820,7 +847,11 @@
       "official"
     ],
     "stars": 0,
-    "source": "https://github.com/anthropics/skills/tree/main/skills/frontend-design"
+    "source": "https://github.com/anthropics/skills/tree/main/skills/frontend-design",
+    "archive": "skill-frontend-design.tar.gz",
+    "entries": [
+      ".claude/skills/frontend-design/SKILL.md"
+    ]
   },
   {
     "id": "skill-canvas-design",
@@ -833,7 +864,11 @@
       "official"
     ],
     "stars": 0,
-    "source": "https://github.com/anthropics/skills/tree/main/skills/canvas-design"
+    "source": "https://github.com/anthropics/skills/tree/main/skills/canvas-design",
+    "archive": "skill-canvas-design.tar.gz",
+    "entries": [
+      ".claude/skills/canvas-design/SKILL.md"
+    ]
   },
   {
     "id": "skill-algorithmic-art",
@@ -846,7 +881,11 @@
       "official"
     ],
     "stars": 0,
-    "source": "https://github.com/anthropics/skills/tree/main/skills/algorithmic-art"
+    "source": "https://github.com/anthropics/skills/tree/main/skills/algorithmic-art",
+    "archive": "skill-algorithmic-art.tar.gz",
+    "entries": [
+      ".claude/skills/algorithmic-art/SKILL.md"
+    ]
   },
   {
     "id": "skill-brand-guidelines",
@@ -859,7 +898,11 @@
       "official"
     ],
     "stars": 0,
-    "source": "https://github.com/anthropics/skills/tree/main/skills/brand-guidelines"
+    "source": "https://github.com/anthropics/skills/tree/main/skills/brand-guidelines",
+    "archive": "skill-brand-guidelines.tar.gz",
+    "entries": [
+      ".claude/skills/brand-guidelines/SKILL.md"
+    ]
   },
   {
     "id": "skill-claude-api",
@@ -872,7 +915,11 @@
       "official"
     ],
     "stars": 0,
-    "source": "https://github.com/anthropics/skills/tree/main/skills/claude-api"
+    "source": "https://github.com/anthropics/skills/tree/main/skills/claude-api",
+    "archive": "skill-claude-api.tar.gz",
+    "entries": [
+      ".claude/skills/claude-api/SKILL.md"
+    ]
   },
   {
     "id": "skill-docx",
@@ -885,7 +932,11 @@
       "official"
     ],
     "stars": 0,
-    "source": "https://github.com/anthropics/skills/tree/main/skills/docx"
+    "source": "https://github.com/anthropics/skills/tree/main/skills/docx",
+    "archive": "skill-docx.tar.gz",
+    "entries": [
+      ".claude/skills/docx/SKILL.md"
+    ]
   },
   {
     "id": "skill-pdf",
@@ -898,7 +949,11 @@
       "official"
     ],
     "stars": 0,
-    "source": "https://github.com/anthropics/skills/tree/main/skills/pdf"
+    "source": "https://github.com/anthropics/skills/tree/main/skills/pdf",
+    "archive": "skill-pdf.tar.gz",
+    "entries": [
+      ".claude/skills/pdf/SKILL.md"
+    ]
   },
   {
     "id": "skill-pptx",
@@ -911,7 +966,11 @@
       "official"
     ],
     "stars": 0,
-    "source": "https://github.com/anthropics/skills/tree/main/skills/pptx"
+    "source": "https://github.com/anthropics/skills/tree/main/skills/pptx",
+    "archive": "skill-pptx.tar.gz",
+    "entries": [
+      ".claude/skills/pptx/SKILL.md"
+    ]
   },
   {
     "id": "skill-doc-coauthoring",
@@ -924,7 +983,11 @@
       "official"
     ],
     "stars": 0,
-    "source": "https://github.com/anthropics/skills/tree/main/skills/doc-coauthoring"
+    "source": "https://github.com/anthropics/skills/tree/main/skills/doc-coauthoring",
+    "archive": "skill-doc-coauthoring.tar.gz",
+    "entries": [
+      ".claude/skills/doc-coauthoring/SKILL.md"
+    ]
   },
   {
     "id": "skill-internal-comms",
@@ -937,6 +1000,265 @@
       "official"
     ],
     "stars": 0,
-    "source": "https://github.com/anthropics/skills/tree/main/skills/internal-comms"
+    "source": "https://github.com/anthropics/skills/tree/main/skills/internal-comms",
+    "archive": "skill-internal-comms.tar.gz",
+    "entries": [
+      ".claude/skills/internal-comms/SKILL.md"
+    ]
+  },
+  {
+    "id": "mcp-playwright",
+    "kind": "mcp",
+    "name": "playwright",
+    "description": "Browser automation and end-to-end testing via Playwright.",
+    "author": "microsoft",
+    "tags": [
+      "testing",
+      "browser",
+      "mcp"
+    ],
+    "stars": 0,
+    "source": "https://github.com/microsoft/playwright-mcp",
+    "mcp": {
+      "name": "playwright",
+      "command": "node",
+      "args": [
+        ".claude/mcp/playwright/node_modules/@playwright/mcp/cli.js",
+        "--headless",
+        "--browser",
+        "chromium"
+      ],
+      "env": {
+        "PLAYWRIGHT_BROWSERS_PATH": ".claude/mcp/playwright/browsers"
+      }
+    },
+    "archive": "mcp-playwright.tar.gz",
+    "entries": [
+      ".claude/mcp/playwright/node_modules/@playwright/mcp/cli.js"
+    ]
+  },
+  {
+    "id": "skill-terraform",
+    "kind": "skill",
+    "name": "terraform",
+    "description": "Best-practices guidance for safer Terraform / OpenTofu.",
+    "author": "antonbabenko",
+    "tags": [
+      "infra",
+      "iac"
+    ],
+    "stars": 0,
+    "source": "https://github.com/antonbabenko/terraform-skill",
+    "archive": "skill-terraform.tar.gz",
+    "entries": [
+      ".claude/skills/terraform/SKILL.md"
+    ]
+  },
+  {
+    "id": "skill-otelcol-doctor",
+    "kind": "skill",
+    "name": "otelcol-doctor",
+    "description": "Write and validate OpenTelemetry Collector configs.",
+    "author": "s3onghyun",
+    "tags": [
+      "observability"
+    ],
+    "stars": 0,
+    "source": "https://github.com/s3onghyun/otelcol-doctor",
+    "archive": "skill-otelcol-doctor.tar.gz",
+    "entries": [
+      ".claude/skills/otelcol-doctor/SKILL.md"
+    ]
+  },
+  {
+    "id": "skill-safety-net",
+    "kind": "skill",
+    "name": "safety-net",
+    "description": "Catch destructive git and filesystem commands before they run.",
+    "author": "kenryu42",
+    "tags": [
+      "safety",
+      "git"
+    ],
+    "stars": 0,
+    "source": "https://github.com/kenryu42/claude-code-safety-net",
+    "archive": "skill-safety-net.tar.gz",
+    "entries": [
+      ".claude/skills/safety-net/SKILL.md"
+    ]
+  },
+  {
+    "id": "skill-security-review",
+    "kind": "skill",
+    "name": "security-review",
+    "description": "AI-powered security review for pull requests.",
+    "author": "anthropic",
+    "tags": [
+      "security",
+      "review"
+    ],
+    "stars": 0,
+    "source": "https://github.com/anthropics/claude-code-security-review",
+    "archive": "skill-security-review.tar.gz",
+    "entries": [
+      ".claude/skills/security-review/SKILL.md"
+    ]
+  },
+  {
+    "id": "skill-agent-guard",
+    "kind": "skill",
+    "name": "agent-guard",
+    "description": "Real-time secret-leak guardrails for AI agents.",
+    "author": "JeongJaeSoon",
+    "tags": [
+      "security",
+      "secrets"
+    ],
+    "stars": 0,
+    "source": "https://github.com/JeongJaeSoon/agent-guard",
+    "archive": "skill-agent-guard.tar.gz",
+    "entries": [
+      ".claude/skills/agent-guard/SKILL.md"
+    ]
+  },
+  {
+    "id": "skill-ralph",
+    "kind": "skill",
+    "name": "ralph",
+    "description": "Autonomous iterative development loop framework.",
+    "author": "frankbria",
+    "tags": [
+      "workflow",
+      "agent"
+    ],
+    "stars": 0,
+    "source": "https://github.com/frankbria/ralph-claude-code",
+    "archive": "skill-ralph.tar.gz",
+    "entries": [
+      ".claude/skills/ralph/SKILL.md"
+    ]
+  },
+  {
+    "id": "skill-academy-guide",
+    "kind": "skill",
+    "name": "academy-guide",
+    "description": "Navigate Anthropic Academy courses and structured learning paths.",
+    "author": "anthropics",
+    "tags": [
+      "learning",
+      "guide"
+    ],
+    "stars": 0,
+    "source": "https://github.com/anthropics/skills/tree/main/skills/academy-guide",
+    "archive": "skill-academy-guide.tar.gz",
+    "entries": [
+      ".claude/skills/academy-guide/SKILL.md"
+    ]
+  },
+  {
+    "id": "skill-discernment-nudge",
+    "kind": "skill",
+    "name": "discernment-nudge",
+    "description": "Prompt careful discernment when evaluating claims and sources.",
+    "author": "anthropics",
+    "tags": [
+      "reasoning",
+      "quality"
+    ],
+    "stars": 0,
+    "source": "https://github.com/anthropics/skills/tree/main/skills/discernment-nudge",
+    "archive": "skill-discernment-nudge.tar.gz",
+    "entries": [
+      ".claude/skills/discernment-nudge/SKILL.md"
+    ]
+  },
+  {
+    "id": "skill-slack-gif-creator",
+    "kind": "skill",
+    "name": "slack-gif-creator",
+    "description": "Create animated GIFs sized and formatted for Slack.",
+    "author": "anthropics",
+    "tags": [
+      "slack",
+      "media",
+      "design"
+    ],
+    "stars": 0,
+    "source": "https://github.com/anthropics/skills/tree/main/skills/slack-gif-creator",
+    "archive": "skill-slack-gif-creator.tar.gz",
+    "entries": [
+      ".claude/skills/slack-gif-creator/SKILL.md"
+    ]
+  },
+  {
+    "id": "skill-theme-factory",
+    "kind": "skill",
+    "name": "theme-factory",
+    "description": "Generate cohesive visual themes and design tokens.",
+    "author": "anthropics",
+    "tags": [
+      "design",
+      "theming"
+    ],
+    "stars": 0,
+    "source": "https://github.com/anthropics/skills/tree/main/skills/theme-factory",
+    "archive": "skill-theme-factory.tar.gz",
+    "entries": [
+      ".claude/skills/theme-factory/SKILL.md"
+    ]
+  },
+  {
+    "id": "skill-web-artifacts-builder",
+    "kind": "skill",
+    "name": "web-artifacts-builder",
+    "description": "Build interactive, self-contained web artifacts.",
+    "author": "anthropics",
+    "tags": [
+      "web",
+      "frontend",
+      "artifacts"
+    ],
+    "stars": 0,
+    "source": "https://github.com/anthropics/skills/tree/main/skills/web-artifacts-builder",
+    "archive": "skill-web-artifacts-builder.tar.gz",
+    "entries": [
+      ".claude/skills/web-artifacts-builder/SKILL.md"
+    ]
+  },
+  {
+    "id": "skill-webapp-testing",
+    "kind": "skill",
+    "name": "webapp-testing",
+    "description": "Test web applications end-to-end, including flows and assertions.",
+    "author": "anthropics",
+    "tags": [
+      "testing",
+      "web",
+      "e2e"
+    ],
+    "stars": 0,
+    "source": "https://github.com/anthropics/skills/tree/main/skills/webapp-testing",
+    "archive": "skill-webapp-testing.tar.gz",
+    "entries": [
+      ".claude/skills/webapp-testing/SKILL.md"
+    ]
+  },
+  {
+    "id": "skill-xlsx",
+    "kind": "skill",
+    "name": "xlsx",
+    "description": "Create and edit Excel spreadsheets (.xlsx) programmatically.",
+    "author": "anthropics",
+    "tags": [
+      "office",
+      "spreadsheet",
+      "docs"
+    ],
+    "stars": 0,
+    "source": "https://github.com/anthropics/skills/tree/main/skills/xlsx",
+    "archive": "skill-xlsx.tar.gz",
+    "entries": [
+      ".claude/skills/xlsx/SKILL.md"
+    ]
   }
 ]

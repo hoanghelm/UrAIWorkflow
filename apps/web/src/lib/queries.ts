@@ -1,8 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "./api";
 
-export const useMarketplaceQuery = () =>
-  useQuery({ queryKey: ["marketplace"], queryFn: api.marketplace });
+export const useMarketplaceQuery = (projectId?: string) =>
+  useQuery({
+    queryKey: ["marketplace", projectId ?? null],
+    queryFn: () => api.marketplace(projectId ? { projectId } : undefined),
+  });
 
 export const useProjectSummariesQuery = () =>
   useQuery({ queryKey: ["project-summaries"], queryFn: api.projectSummaries });

@@ -29,6 +29,8 @@ public static class DependencyInjection
         services.AddScoped<IConnectorDbContext>(sp => sp.GetRequiredService<VccDbContext>());
         services.AddScoped<IDesignDbContext>(sp => sp.GetRequiredService<VccDbContext>());
         services.AddScoped<IMetricsDbContext>(sp => sp.GetRequiredService<VccDbContext>());
+        services.AddScoped<IMemoryDbContext>(sp => sp.GetRequiredService<VccDbContext>());
+        services.AddScoped<IFeatureDbContext>(sp => sp.GetRequiredService<VccDbContext>());
         return services;
     }
 }

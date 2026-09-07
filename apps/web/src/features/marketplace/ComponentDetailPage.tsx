@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Button,
+  Select,
   Tag,
   Empty,
   Spin,
@@ -34,9 +36,11 @@ const KIND_LABEL: Record<string, string> = {
 export function ComponentDetailPage() {
   const { id = "" } = useParams();
   const navigate = useNavigate();
-  const { data: list = [], isLoading } = useMarketplaceQuery();
   const currentId = useAppSelector((s) => s.projects.currentId);
+  const { data: list = [], isLoading } = useMarketplaceQuery(currentId);
+  const qc = useQueryClient();
   const [installing, setInstalling] = useState(false);
+  const [version, setVersion] = useState("");
   const [tab, setTab] = useState<"code" | "preview">("code");
 
   if (isLoading) {
@@ -54,12 +58,16 @@ export function ComponentDetailPage() {
 
   const byId = new Map(list.map((i) => [i.id, i]));
   const included = item.bundle.map((b) => byId.get(b)).filter(Boolean);
-  const installCmd = `vcc add ${item.kind}/${item.install || item.name}`;
+  const versions = item.versions.length > 0 ? item.versions : [item.version];
+  const activeVersion = version || item.version;
+  const installCmd = `vcc add ${item.kind}/${item.install || item.name}@${activeVersion}`;
 
   const copy = (text: string) => {
     void navigator.clipboard?.writeText(text);
     notify.success("Copied");
   };
+
+  const refresh = () => qc.invalidateQueries({ queryKey: ["marketplace"] });
 
   const addToProject = async () => {
     if (!currentId) {
@@ -67,9 +75,20 @@ export function ComponentDetailPage() {
       return;
     }
     setInstalling(true);
-    const res = await api.installComponents(currentId, [item.id]);
+    const res = await api.installComponents(currentId, [`${item.id}@${activeVersion}`]);
     setInstalling(false);
+    void refresh();
     notify.success(`Added ${res.installed.length} to the project`);
+    if (res.failed?.length) {
+      notify.error(res.failed.map((f) => `${f.id}: ${f.reason}`).join("; "));
+    }
+  };
+
+  const unpin = async () => {
+    if (!currentId) return;
+    await api.unpinBundle(currentId, item.id);
+    void refresh();
+    notify.success(`Unpinned ${item.name} — tracking latest`);
   };
 
   return (
@@ -89,10 +108,18 @@ export function ComponentDetailPage() {
           {item.name.charAt(0).toUpperCase()}
         </span>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold">{item.name}</h1>
-          <div className="mt-2 flex items-center gap-2">
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold">{item.name}</h1>
+            <span className="font-mono text-sm text-faint">v{item.version}</span>
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
             <Tag>{KIND_LABEL[item.kind] ?? item.kind}</Tag>
             {item.tags[0] && <Tag>{item.tags[0]}</Tag>}
+            {item.updateAvailable && <Tag color="orange">update to v{item.version}</Tag>}
+            {item.pinned && <Tag color="blue">pinned v{item.installedVersion}</Tag>}
+            {!item.pinned && item.installedVersion && !item.updateAvailable && (
+              <Tag color="green">installed v{item.installedVersion}</Tag>
+            )}
             {item.stars > 0 && (
               <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 font-mono text-xs font-medium text-green-600 dark:bg-green-900/30 dark:text-green-400">
                 <DownloadOutlined /> {item.stars.toLocaleString()}
@@ -100,14 +127,27 @@ export function ComponentDetailPage() {
             )}
           </div>
         </div>
-        <Button
-          type="primary"
-          icon={<AppstoreAddOutlined />}
-          loading={installing}
-          onClick={addToProject}
-        >
-          Add to project
-        </Button>
+        <div className="flex flex-col items-end gap-2">
+          {versions.length > 1 && (
+            <Select
+              value={activeVersion}
+              onChange={(v: string) => setVersion(v)}
+              options={versions.map((vv: string) => ({ label: `v${vv}`, value: vv }))}
+              style={{ width: 140 }}
+            />
+          )}
+          <div className="flex items-center gap-2">
+            {item.pinned && <Button onClick={unpin}>Unpin</Button>}
+            <Button
+              type="primary"
+              icon={<AppstoreAddOutlined />}
+              loading={installing}
+              onClick={addToProject}
+            >
+              Add to project
+            </Button>
+          </div>
+        </div>
       </div>
 
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-900">

@@ -1,0 +1,89 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+  <Package Name="VCC-Workflow" Manufacturer="hoanghelm" Version="$(var.Version)"
+           UpgradeCode="6f3a1c2e-9b4d-4a71-8c2f-1e5a7b9d0c31" Scope="perMachine" Compressed="yes">
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of VCC-Workflow is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="VCC-Workflow">
+        <Directory Id="APIDIR" Name="server" />
+        <Directory Id="DESKTOPDIR" Name="desktop" />
+        <Directory Id="PREREQDIR" Name="prereq" />
+      </Directory>
+    </StandardDirectory>
+
+    <StandardDirectory Id="CommonAppDataFolder">
+      <Directory Id="DATAROOT" Name="VCC-Workflow">
+        <Directory Id="DATAGLOBAL" Name="global" />
+      </Directory>
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="MENUDIR" Name="VCC-Workflow" />
+    </StandardDirectory>
+
+    <Component Id="ApiServiceExe" Directory="APIDIR" Guid="c1a2b3d4-1111-4a22-9b33-0a1b2c3d4e51">
+      <File Id="VccApiExe" Source="..\build\stage\server\Vcc.Api.exe" KeyPath="yes" />
+      <ServiceInstall Id="VccSvcInstall" Name="VccWorkflow" DisplayName="VCC-Workflow Server"
+                      Description="VCC-Workflow local server (API + web UI)." Type="ownProcess"
+                      Start="auto" ErrorControl="normal" Vital="yes"
+                      Arguments="--environment Production --urls http://localhost:5086" />
+      <ServiceControl Id="VccSvcControl" Name="VccWorkflow"
+                      Start="install" Stop="both" Remove="uninstall" Wait="yes" />
+    </Component>
+
+    <ComponentGroup Id="ApiFiles" Directory="APIDIR">
+      <Files Include="..\build\stage\server\**">
+        <Exclude Files="..\build\stage\server\Vcc.Api.exe" />
+      </Files>
+    </ComponentGroup>
+
+    <ComponentGroup Id="DesktopFiles" Directory="DESKTOPDIR">
+      <Files Include="..\build\stage\desktop\**" />
+    </ComponentGroup>
+
+    <ComponentGroup Id="PrereqFiles" Directory="PREREQDIR">
+      <Files Include="..\build\stage\prereq\**" />
+    </ComponentGroup>
+
+    <ComponentGroup Id="GlobalData" Directory="DATAGLOBAL">
+      <Files Include="..\build\stage\data-global\**" />
+    </ComponentGroup>
+
+    <Component Id="AppShortcut" Directory="MENUDIR" Guid="c1a2b3d4-2222-4a22-9b33-0a1b2c3d4e52">
+      <Shortcut Id="StartMenuShortcut" Name="VCC-Workflow"
+                Target="[DESKTOPDIR]VccDesktop.exe" WorkingDirectory="DESKTOPDIR" />
+      <RemoveFolder Id="RemoveMenuDir" Directory="MENUDIR" On="uninstall" />
+      <RegistryValue Root="HKCU" Key="Software\VCC-Workflow" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+
+    <Component Id="DataDir" Directory="DATAROOT" Guid="c1a2b3d4-3333-4a22-9b33-0a1b2c3d4e53">
+      <CreateFolder />
+      <RegistryValue Root="HKLM" Key="Software\VCC-Workflow" Name="data" Type="integer" Value="1" KeyPath="yes" />
+      <util:RemoveFolderEx Id="RemoveDataRoot" On="uninstall" Property="DATAROOTPATH" Condition="NOT UPGRADINGPRODUCTCODE" />
+    </Component>
+
+    <Feature Id="Main" Title="VCC-Workflow" Level="1">
+      <ComponentRef Id="ApiServiceExe" />
+      <ComponentGroupRef Id="ApiFiles" />
+      <ComponentGroupRef Id="DesktopFiles" />
+      <ComponentGroupRef Id="PrereqFiles" />
+      <ComponentGroupRef Id="GlobalData" />
+      <ComponentRef Id="AppShortcut" />
+      <ComponentRef Id="DataDir" />
+    </Feature>
+
+    <SetProperty Id="DATAROOTPATH" Value="[DATAROOT]" Before="CostFinalize" Sequence="both" />
+
+    <CustomAction Id="InstallWebView2" Directory="PREREQDIR"
+                  ExeCommand="&quot;[PREREQDIR]MicrosoftEdgeWebview2Setup.exe&quot; /silent /install"
+                  Execute="deferred" Impersonate="no" Return="ignore" />
+
+    <InstallExecuteSequence>
+      <Custom Action="InstallWebView2" After="InstallFiles" Condition="NOT REMOVE" />
+    </InstallExecuteSequence>
+
+  </Package>
+</Wix>

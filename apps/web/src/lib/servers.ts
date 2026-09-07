@@ -52,7 +52,7 @@ export function apiBaseUrl(): string {
 
 export function wsBaseUrl(): string {
   const s = getActiveServer();
-  return s.url ? trimUrl(s.url) : (import.meta.env.VITE_WS_URL ?? "http://localhost:3001");
+  return s.url ? trimUrl(s.url) : (import.meta.env.VITE_WS_URL ?? "http://localhost:5086");
 }
 
 export function authToken(): string {

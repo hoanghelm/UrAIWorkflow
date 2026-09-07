@@ -9,8 +9,8 @@ public static class PackEndpoints
     {
         var group = app.MapGroup("/api/packs").WithTags("Packs");
 
-        group.MapGet("", async (IPackService svc, CancellationToken ct) =>
-            Results.Ok(await svc.ListAsync(ct)));
+        group.MapGet("", async (string? q, IPackService svc, CancellationToken ct) =>
+            Results.Ok(await svc.SearchAsync(q, ct)));
 
         group.MapGet("/project/{projectId}", async (string projectId, IPackService svc, CancellationToken ct) =>
             Results.Ok(await svc.ListForProjectAsync(projectId, ct)));

@@ -12,6 +12,9 @@ public sealed class MigrationConnectionFactory
     public DbProvider Provider { get; }
     public string ConnectionString { get; }
 
+    public string? SqliteDataSource =>
+        Provider == DbProvider.Sqlite ? Path.GetFullPath(new SqliteConnectionStringBuilder(ConnectionString).DataSource) : null;
+
     public MigrationConnectionFactory(IConfiguration config)
     {
         var hosted = string.Equals(config["DEPLOYMENT_MODE"], "hosted", StringComparison.OrdinalIgnoreCase);

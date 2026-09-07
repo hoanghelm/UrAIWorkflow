@@ -521,9 +521,18 @@ export const api = {
     client.post<BoardCard>(`/board/${id}/link`, { targetId }).then((r) => r.data),
   unlinkBoardCard: (id: string, targetId: string) =>
     client.delete<BoardCard>(`/board/${id}/link/${targetId}`).then((r) => r.data),
-  marketplace: () => client.get<MarketplaceItem[]>("/marketplace").then((r) => r.data),
+  marketplace: (params?: { q?: string; kind?: string; tag?: string; projectId?: string }) =>
+    client.get<MarketplaceItem[]>("/marketplace", { params }).then((r) => r.data),
   installComponents: (projectId: string, ids: string[]) =>
     client
-      .post<{ installed: string[] }>("/marketplace/install", { projectId, ids })
+      .post<{ installed: string[]; failed: { id: string; reason: string }[] }>("/marketplace/install", { projectId, ids })
+      .then((r) => r.data),
+  pinBundle: (projectId: string, key: string, version?: string) =>
+    client
+      .post<{ key: string; pinnedVersion: string }>(`/marketplace/${encodeURIComponent(key)}/pin`, { projectId, version })
+      .then((r) => r.data),
+  unpinBundle: (projectId: string, key: string) =>
+    client
+      .post<{ key: string; unpinned: boolean }>(`/marketplace/${encodeURIComponent(key)}/unpin`, { projectId })
       .then((r) => r.data),
 };
