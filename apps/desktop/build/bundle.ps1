@@ -37,11 +37,22 @@ New-CleanDir $ServerOut
 if ($LASTEXITCODE -ne 0) { throw "Vcc.Api publish failed" }
 
 if (-not $SkipWeb) {
-  Write-Host "[bundle] building web SPA -> wwwroot..." -ForegroundColor Cyan
   Push-Location $Root
-  & pnpm --filter web build | Out-Host
-  Pop-Location
-  if ($LASTEXITCODE -ne 0) { throw "web build failed" }
+  try {
+    Write-Host "[bundle] installing workspace dependencies (pnpm install)..." -ForegroundColor Cyan
+    & pnpm install | Out-Host
+    if ($LASTEXITCODE -ne 0) { throw "pnpm install failed" }
+
+    Write-Host "[bundle] building shared schema..." -ForegroundColor Cyan
+    & pnpm --filter @vcc-workflow/schema build | Out-Host
+    if ($LASTEXITCODE -ne 0) { throw "schema build failed" }
+
+    Write-Host "[bundle] building web SPA -> wwwroot..." -ForegroundColor Cyan
+    & pnpm --filter @vcc-workflow/web build | Out-Host
+    if ($LASTEXITCODE -ne 0) { throw "web build failed" }
+  }
+  finally { Pop-Location }
+
   $wwwroot = Join-Path $ServerOut 'wwwroot'
   New-CleanDir $wwwroot
   Copy-Item -Recurse -Force (Join-Path $WebDir 'dist\*') $wwwroot
