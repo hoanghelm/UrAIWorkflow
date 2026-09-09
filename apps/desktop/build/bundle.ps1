@@ -11,9 +11,12 @@
 
 .PARAMETER SkipWeb        Do not rebuild the SPA (reuse existing wwwroot).
 .PARAMETER SkipPlaywright Do not stage the Playwright browser pack.
+.PARAMETER PlaywrightPack Path to the offline Playwright browser pack (.tar.gz). Defaults to
+                          $env:VCC_PLAYWRIGHT_PACK, else <repo>\vendor\pw-browser-pack-win-x64.tar.gz.
+                          The pack is huge and not in git; absent => build continues without offline browsers.
 #>
 [CmdletBinding()]
-param([string]$Version = '1.0.0', [switch]$SkipWeb, [switch]$SkipPlaywright)
+param([string]$Version = '1.0.0', [switch]$SkipWeb, [switch]$SkipPlaywright, [string]$PlaywrightPack)
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
@@ -27,7 +30,10 @@ $PwOut     = Join-Path $Stage 'playwright'
 $ApiCsproj = Join-Path $Root 'apps\server\src\Modules\Vcc.Api\Vcc.Api.csproj'
 $DeskCsproj= Join-Path $Root 'apps\desktop\VccDesktop.csproj'
 $WebDir    = Join-Path $Root 'apps\web'
-$PwPack    = 'd:\tmp\vcc-vendor\pw-browser-pack-win-x64.tar.gz'
+$PwPack    = if ($PlaywrightPack) { $PlaywrightPack }
+             elseif ($env:VCC_PLAYWRIGHT_PACK) { $env:VCC_PLAYWRIGHT_PACK }
+             elseif (Test-Path (Join-Path $Root 'vendor\pw-browser-pack-win-x64.tar.gz')) { Join-Path $Root 'vendor\pw-browser-pack-win-x64.tar.gz' }
+             else { 'd:\tmp\vcc-vendor\pw-browser-pack-win-x64.tar.gz' }
 
 function New-CleanDir([string]$p) { if (Test-Path $p) { Remove-Item -Recurse -Force $p }; New-Item -ItemType Directory -Force -Path $p | Out-Null }
 
@@ -88,7 +94,7 @@ if (-not $SkipPlaywright) {
   if (Test-Path $PwPack) {
     & tar.exe -xzf $PwPack -C $DataGlobal
     if ($LASTEXITCODE -ne 0) { Write-Warning "Playwright pack extraction failed; installer will ship without offline browsers." }
-  } else { Write-Warning "Playwright pack not found at $PwPack; skipping (installer ships without offline browsers)." }
+  } else { Write-Warning "Playwright pack not found at $PwPack — installer will ship WITHOUT offline browsers. To include them pass -PlaywrightPack <file> or set VCC_PLAYWRIGHT_PACK; to silence this run with -SkipPlaywright." }
 }
 
 Write-Host "[bundle] done (v$Version). Stage at: $Stage" -ForegroundColor Green
