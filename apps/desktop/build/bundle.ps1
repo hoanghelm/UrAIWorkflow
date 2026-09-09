@@ -94,7 +94,7 @@ if (-not $SkipPlaywright) {
   if (Test-Path $PwPack) {
     & tar.exe -xzf $PwPack -C $DataGlobal
     if ($LASTEXITCODE -ne 0) { Write-Warning "Playwright pack extraction failed; installer will ship without offline browsers." }
-  } else { Write-Warning "Playwright pack not found at $PwPack — installer will ship WITHOUT offline browsers. To include them pass -PlaywrightPack <file> or set VCC_PLAYWRIGHT_PACK; to silence this run with -SkipPlaywright." }
+  } else { Write-Warning "Playwright pack not found at $PwPack - installer will ship without offline browsers. Pass -PlaywrightPack, set VCC_PLAYWRIGHT_PACK, or use -SkipPlaywright to silence." }
 }
 
 Write-Host "[bundle] done (v$Version). Stage at: $Stage" -ForegroundColor Green
