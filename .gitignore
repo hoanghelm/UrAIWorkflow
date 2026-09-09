@@ -63,6 +63,8 @@ secrets.json
 # Runtime state (worktrees, previews, artifact bundles, harness)
 .harness/
 worktrees/
+# keep the Vcc.Terminal source folder that case-insensitively collides with worktrees/ above
+!apps/server/src/Modules/Vcc.Terminal/Worktrees/
 .worktrees/
 
 # Generated example apps produced by runs
