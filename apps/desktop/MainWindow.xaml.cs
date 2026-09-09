@@ -1,5 +1,7 @@
+using System.IO;
 using System.Net.Http;
 using System.Windows;
+using Microsoft.Web.WebView2.Core;
 
 namespace Vcc.Desktop;
 
@@ -16,7 +18,21 @@ public partial class MainWindow : Window
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
-        await Web.EnsureCoreWebView2Async();
+        try
+        {
+            var userData = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "VCC-Workflow", "WebView2");
+            Directory.CreateDirectory(userData);
+            var env = await CoreWebView2Environment.CreateAsync(null, userData);
+            await Web.EnsureCoreWebView2Async(env);
+        }
+        catch (Exception ex)
+        {
+            Status.Text = $"WebView2 failed to start: {ex.Message}";
+            return;
+        }
+
         Web.CoreWebView2.NavigationCompleted += (_, args) =>
         {
             if (!args.IsSuccess) return;
@@ -41,7 +57,7 @@ public partial class MainWindow : Window
             {
             }
 
-            Status.Text = $"Starting local service… ({attempt})";
+            Status.Text = attempt <= 5 ? "Loading resources…" : "Starting local service…";
             await Task.Delay(1000);
         }
 
