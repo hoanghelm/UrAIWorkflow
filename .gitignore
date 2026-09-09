@@ -13,6 +13,9 @@ apps/desktop/build/stage/
 # Build output
 dist/
 build/
+# keep the desktop installer build SOURCE (bundle.ps1); only its stage/ output is ignored
+!apps/desktop/build/
+apps/desktop/build/stage/
 .turbo/
 coverage/
 *.tsbuildinfo
