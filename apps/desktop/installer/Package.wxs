@@ -1,5 +1,6 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
-     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
   <Package Name="VCC-Workflow" Manufacturer="hoanghelm" Version="$(var.Version)"
            UpgradeCode="6f3a1c2e-9b4d-4a71-8c2f-1e5a7b9d0c31" Scope="perMachine" Compressed="yes">
 
@@ -84,6 +85,9 @@
     <InstallExecuteSequence>
       <Custom Action="InstallWebView2" After="InstallFiles" Condition="NOT REMOVE" />
     </InstallExecuteSequence>
+
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
+    <WixVariable Id="WixUILicenseRtf" Value="license.rtf" />
 
   </Package>
 </Wix>

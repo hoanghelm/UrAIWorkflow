@@ -15,6 +15,7 @@ using Vcc.Test;
 using Vcc.Migrations;
 using Vcc.Migrations.Runners;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,8 +51,15 @@ builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
 
 var app = builder.Build();
 app.UseCors();
-app.UseDefaultFiles();
-app.UseStaticFiles();
+
+var webRoot = Path.Combine(AppContext.BaseDirectory, "wwwroot");
+if (Directory.Exists(webRoot))
+{
+    var spaFiles = new PhysicalFileProvider(webRoot);
+    app.UseDefaultFiles(new DefaultFilesOptions { FileProvider = spaFiles });
+    app.UseStaticFiles(new StaticFileOptions { FileProvider = spaFiles });
+}
+
 app.MapDefaultEndpoints();
 
 app.MapGet("/api/health", () => Results.Ok(new { status = "ok" }));
@@ -69,7 +77,12 @@ app.MapMarketplace();
 app.MapMemory();
 app.MapFeatures();
 app.MapHub<RunsHub>("/runs");
-app.MapFallbackToFile("{*path:regex(^(?!api/).*$)}", "index.html");
+app.MapFallback((HttpContext ctx) =>
+{
+    if (ctx.Request.Path.StartsWithSegments("/api")) return Results.NotFound();
+    var index = Path.Combine(webRoot, "index.html");
+    return File.Exists(index) ? Results.File(index, "text/html") : Results.NotFound();
+});
 
 await app.Services.GetRequiredService<MigrationOrchestrator>().RunAsync();
 
